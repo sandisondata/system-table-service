@@ -37,9 +37,9 @@ const create = (query, createData) => __awaiter(void 0, void 0, void 0, function
     debug.write(node_debug_1.MessageType.Step, 'Creating table...');
     const text = `CREATE TABLE ${createData.table_name} (` +
         'id serial, ' +
-        'creation_date timestamp with time zone NOT NULL DEFAULT now(), ' +
+        'creation_date timestamptz NOT NULL DEFAULT now(), ' +
         'created_by uuid NOT NULL DEFAULT uuid_nil(), ' +
-        'last_update_date timestamp with time zone NOT NULL DEFAULT now(), ' +
+        'last_update_date timestamptz NOT NULL DEFAULT now(), ' +
         'last_updated_by uuid NOT NULL DEFAULT uuid_nil(), ' +
         'file_count smallint NOT NULL DEFAULT 0, ' +
         `CONSTRAINT "${createData.table_uuid}_pk" PRIMARY KEY (id)` +
