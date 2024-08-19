@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 
 import { Database } from 'database';
 import { Debug, MessageType } from 'node-debug';
-import { create, delete_, find, findOne, update } from '../dist/index';
+import { create, delete_, find, findOne, update } from '../dist';
 
 import { v4 as uuidv4 } from 'uuid';
 
