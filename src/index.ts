@@ -48,7 +48,7 @@ export const create = async (query: Query, createData: CreateData) => {
   debug.write(MessageType.Value, `uniqueKey2=${JSON.stringify(uniqueKey2)}`);
   debug.write(MessageType.Step, 'Checking unique key 2...');
   await checkUniqueKey(query, tableName, instanceName, uniqueKey2);
-  debug.write(MessageType.Step, 'Creating table...');
+  debug.write(MessageType.Step, 'Creating data table...');
   const text =
     `CREATE TABLE ${createData.table_name} (` +
     'id serial, ' +
