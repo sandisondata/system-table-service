@@ -48,7 +48,7 @@ export const create = async (query: Query, createData: CreateData) => {
   debug.write(MessageType.Value, `uniqueKey2=${JSON.stringify(uniqueKey2)}`);
   debug.write(MessageType.Step, 'Checking unique key 2...');
   await checkUniqueKey(query, tableName, instanceName, uniqueKey2);
-  debug.write(MessageType.Step, 'Creating data table...');
+  debug.write(MessageType.Step, 'Creating data table (and sequence)...');
   const text =
     `CREATE TABLE ${createData.table_name} (` +
     'id serial, ' +
@@ -148,11 +148,11 @@ export const update = async (
       typeof updateData.table_name !== 'undefined' &&
       updateData.table_name !== row.table_name
     ) {
-      debug.write(MessageType.Step, 'Renaming table...');
+      debug.write(MessageType.Step, 'Renaming data table...');
       let text = `ALTER TABLE ${row.table_name} RENAME TO ${updateData.table_name}`;
       debug.write(MessageType.Value, `text=(${text})`);
       await query(text);
-      debug.write(MessageType.Step, 'Renaming sequence...');
+      debug.write(MessageType.Step, 'Renaming data table sequence...');
       text = `ALTER SEQUENCE ${row.table_name}_id_seq RENAME TO ${updateData.table_name}_id_seq`;
       debug.write(MessageType.Value, `text=(${text})`);
       await query(text);
@@ -181,7 +181,7 @@ export const delete_ = async (query: Query, primaryKey: PrimaryKey) => {
     true,
   )) as Row;
   debug.write(MessageType.Value, `row=${JSON.stringify(row)}`);
-  debug.write(MessageType.Step, 'Dropping table...');
+  debug.write(MessageType.Step, 'Dropping data table (and sequence)...');
   const text = `DROP TABLE ${row.table_name}`;
   debug.write(MessageType.Value, `text=(${text})`);
   await query(text);
