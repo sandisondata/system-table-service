@@ -16,6 +16,10 @@ const debugRows = 3;
 const tableName = '_tables';
 const instanceName = 'table';
 
+const primaryKeyColumnNames = ['table_uuid'];
+const dataColumnNames = ['table_name', 'instance_name', 'is_enabled'];
+const columnNames = [...primaryKeyColumnNames, ...dataColumnNames];
+
 export type PrimaryKey = {
   table_uuid: string;
 };
@@ -25,8 +29,6 @@ export type Data = {
   instance_name: string;
   is_enabled?: boolean;
 };
-
-export const dataColumnNames = ['table_name', 'instance_name', 'is_enabled'];
 
 export type CreateData = PrimaryKey & Data;
 export type Row = PrimaryKey & Required<Data>;
@@ -62,7 +64,12 @@ export const create = async (query: Query, createData: CreateData) => {
   debug.write(MessageType.Value, `text=(${text})`);
   await query(text);
   debug.write(MessageType.Step, 'Creating row...');
-  const createdRow = (await createRow(query, tableName, createData)) as Row;
+  const createdRow = (await createRow(
+    query,
+    tableName,
+    createData,
+    columnNames,
+  )) as Row;
   debug.write(MessageType.Exit, `createdRow=${JSON.stringify(createdRow)}`);
   return createdRow;
 };
@@ -90,6 +97,7 @@ export const findOne = async (query: Query, primaryKey: PrimaryKey) => {
     tableName,
     instanceName,
     primaryKey,
+    { columnNames: columnNames },
   )) as Row;
   debug.write(MessageType.Exit, `row=${JSON.stringify(row)}`);
   return row;
@@ -111,7 +119,7 @@ export const update = async (
     tableName,
     instanceName,
     primaryKey,
-    true,
+    { forUpdate: true },
   )) as Row;
   debug.write(MessageType.Value, `row=${JSON.stringify(row)}`);
   const mergedRow: Row = Object.assign({}, row, updateData);
@@ -163,6 +171,7 @@ export const update = async (
       tableName,
       primaryKey,
       updateData,
+      columnNames,
     )) as Row;
   }
   debug.write(MessageType.Exit, `updatedRow=${JSON.stringify(updatedRow)}`);
@@ -178,7 +187,7 @@ export const delete_ = async (query: Query, primaryKey: PrimaryKey) => {
     tableName,
     instanceName,
     primaryKey,
-    true,
+    { forUpdate: true },
   )) as Row;
   debug.write(MessageType.Value, `row=${JSON.stringify(row)}`);
   debug.write(MessageType.Step, 'Dropping data table (and sequence)...');

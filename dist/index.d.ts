@@ -7,7 +7,6 @@ export type Data = {
     instance_name: string;
     is_enabled?: boolean;
 };
-export declare const dataColumnNames: string[];
 export type CreateData = PrimaryKey & Data;
 export type Row = PrimaryKey & Required<Data>;
 export type UpdateData = Partial<Data>;
