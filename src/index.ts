@@ -17,7 +17,7 @@ const tableName = '_tables';
 const instanceName = 'table';
 
 const primaryKeyColumnNames = ['table_uuid'];
-const dataColumnNames = ['table_name', 'instance_name', 'is_enabled'];
+const dataColumnNames = ['table_name', 'singular_table_name', 'is_enabled'];
 const columnNames = [...primaryKeyColumnNames, ...dataColumnNames];
 
 export type PrimaryKey = {
@@ -26,7 +26,7 @@ export type PrimaryKey = {
 
 export type Data = {
   table_name: string;
-  instance_name: string;
+  singular_table_name: string;
   is_enabled?: boolean;
 };
 
@@ -46,7 +46,7 @@ export const create = async (query: Query, createData: CreateData) => {
   debug.write(MessageType.Value, `uniqueKey1=${JSON.stringify(uniqueKey1)}`);
   debug.write(MessageType.Step, 'Checking unique key 1...');
   await checkUniqueKey(query, tableName, instanceName, uniqueKey1);
-  const uniqueKey2 = { instance_name: createData.instance_name };
+  const uniqueKey2 = { singular_table_name: createData.singular_table_name };
   debug.write(MessageType.Value, `uniqueKey2=${JSON.stringify(uniqueKey2)}`);
   debug.write(MessageType.Step, 'Checking unique key 2...');
   await checkUniqueKey(query, tableName, instanceName, uniqueKey2);
@@ -141,10 +141,12 @@ export const update = async (
       await checkUniqueKey(query, tableName, instanceName, uniqueKey1);
     }
     if (
-      typeof updateData.instance_name !== 'undefined' &&
-      updateData.instance_name !== row.instance_name
+      typeof updateData.singular_table_name !== 'undefined' &&
+      updateData.singular_table_name !== row.singular_table_name
     ) {
-      const uniqueKey2 = { instance_name: updateData.instance_name };
+      const uniqueKey2 = {
+        singular_table_name: updateData.singular_table_name,
+      };
       debug.write(
         MessageType.Value,
         `uniqueKey1=${JSON.stringify(uniqueKey2)}`,

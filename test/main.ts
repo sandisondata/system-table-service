@@ -25,7 +25,7 @@ describe('main', (suiteContext) => {
       await create(query, {
         table_uuid: uuid,
         table_name: 'gadgets',
-        instance_name: 'gadget',
+        singular_table_name: 'gadget',
       });
     });
     debug.write(MessageType.Exit);

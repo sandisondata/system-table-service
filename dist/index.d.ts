@@ -4,7 +4,7 @@ export type PrimaryKey = {
 };
 export type Data = {
     table_name: string;
-    instance_name: string;
+    singular_table_name: string;
     is_enabled?: boolean;
 };
 export type CreateData = PrimaryKey & Data;

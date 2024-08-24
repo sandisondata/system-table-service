@@ -18,7 +18,7 @@ const debugRows = 3;
 const tableName = '_tables';
 const instanceName = 'table';
 const primaryKeyColumnNames = ['table_uuid'];
-const dataColumnNames = ['table_name', 'instance_name', 'is_enabled'];
+const dataColumnNames = ['table_name', 'singular_table_name', 'is_enabled'];
 const columnNames = [...primaryKeyColumnNames, ...dataColumnNames];
 const create = (query, createData) => __awaiter(void 0, void 0, void 0, function* () {
     const debug = new node_debug_1.Debug(`${debugSource}.create`);
@@ -32,7 +32,7 @@ const create = (query, createData) => __awaiter(void 0, void 0, void 0, function
     debug.write(node_debug_1.MessageType.Value, `uniqueKey1=${JSON.stringify(uniqueKey1)}`);
     debug.write(node_debug_1.MessageType.Step, 'Checking unique key 1...');
     yield (0, database_helpers_1.checkUniqueKey)(query, tableName, instanceName, uniqueKey1);
-    const uniqueKey2 = { instance_name: createData.instance_name };
+    const uniqueKey2 = { singular_table_name: createData.singular_table_name };
     debug.write(node_debug_1.MessageType.Value, `uniqueKey2=${JSON.stringify(uniqueKey2)}`);
     debug.write(node_debug_1.MessageType.Step, 'Checking unique key 2...');
     yield (0, database_helpers_1.checkUniqueKey)(query, tableName, instanceName, uniqueKey2);
@@ -91,9 +91,11 @@ const update = (query, primaryKey, updateData) => __awaiter(void 0, void 0, void
             debug.write(node_debug_1.MessageType.Step, 'Checking unique key 1...');
             yield (0, database_helpers_1.checkUniqueKey)(query, tableName, instanceName, uniqueKey1);
         }
-        if (typeof updateData.instance_name !== 'undefined' &&
-            updateData.instance_name !== row.instance_name) {
-            const uniqueKey2 = { instance_name: updateData.instance_name };
+        if (typeof updateData.singular_table_name !== 'undefined' &&
+            updateData.singular_table_name !== row.singular_table_name) {
+            const uniqueKey2 = {
+                singular_table_name: updateData.singular_table_name,
+            };
             debug.write(node_debug_1.MessageType.Value, `uniqueKey1=${JSON.stringify(uniqueKey2)}`);
             debug.write(node_debug_1.MessageType.Step, 'Checking unique key 2...');
             yield (0, database_helpers_1.checkUniqueKey)(query, tableName, instanceName, uniqueKey2);
