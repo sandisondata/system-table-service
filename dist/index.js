@@ -76,7 +76,8 @@ const findOne = (query, primaryKey) => __awaiter(void 0, void 0, void 0, functio
 exports.findOne = findOne;
 const update = (query, primaryKey, updateData) => __awaiter(void 0, void 0, void 0, function* () {
     const debug = new node_debug_1.Debug(`${debugSource}.update`);
-    debug.write(node_debug_1.MessageType.Entry, `primaryKey=${JSON.stringify(primaryKey)};updateData=${JSON.stringify(updateData)}`);
+    debug.write(node_debug_1.MessageType.Entry, `primaryKey=${JSON.stringify(primaryKey)};` +
+        `updateData=${JSON.stringify(updateData)}`);
     debug.write(node_debug_1.MessageType.Step, 'Finding row by primary key...');
     const row = (yield (0, database_helpers_1.findByPrimaryKey)(query, tableName, instanceName, primaryKey, { columnNames: columnNames, forUpdate: true }));
     debug.write(node_debug_1.MessageType.Value, `row=${JSON.stringify(row)}`);
@@ -96,18 +97,20 @@ const update = (query, primaryKey, updateData) => __awaiter(void 0, void 0, void
             const uniqueKey2 = {
                 singular_table_name: updateData.singular_table_name,
             };
-            debug.write(node_debug_1.MessageType.Value, `uniqueKey1=${JSON.stringify(uniqueKey2)}`);
+            debug.write(node_debug_1.MessageType.Value, `uniqueKey2=${JSON.stringify(uniqueKey2)}`);
             debug.write(node_debug_1.MessageType.Step, 'Checking unique key 2...');
             yield (0, database_helpers_1.checkUniqueKey)(query, tableName, instanceName, uniqueKey2);
         }
         if (typeof updateData.table_name !== 'undefined' &&
             updateData.table_name !== row.table_name) {
             debug.write(node_debug_1.MessageType.Step, 'Renaming data table...');
-            let text = `ALTER TABLE ${row.table_name} RENAME TO ${updateData.table_name}`;
+            let text = `ALTER TABLE ${row.table_name} ` + `RENAME TO ${updateData.table_name}`;
             debug.write(node_debug_1.MessageType.Value, `text=(${text})`);
             yield query(text);
             debug.write(node_debug_1.MessageType.Step, 'Renaming data table sequence...');
-            text = `ALTER SEQUENCE ${row.table_name}_id_seq RENAME TO ${updateData.table_name}_id_seq`;
+            text =
+                `ALTER SEQUENCE ${row.table_name}_id_seq ` +
+                    `RENAME TO ${updateData.table_name}_id_seq`;
             debug.write(node_debug_1.MessageType.Value, `text=(${text})`);
             yield query(text);
         }

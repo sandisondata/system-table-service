@@ -111,7 +111,8 @@ export const update = async (
   const debug = new Debug(`${debugSource}.update`);
   debug.write(
     MessageType.Entry,
-    `primaryKey=${JSON.stringify(primaryKey)};updateData=${JSON.stringify(updateData)}`,
+    `primaryKey=${JSON.stringify(primaryKey)};` +
+      `updateData=${JSON.stringify(updateData)}`,
   );
   debug.write(MessageType.Step, 'Finding row by primary key...');
   const row = (await findByPrimaryKey(
@@ -149,7 +150,7 @@ export const update = async (
       };
       debug.write(
         MessageType.Value,
-        `uniqueKey1=${JSON.stringify(uniqueKey2)}`,
+        `uniqueKey2=${JSON.stringify(uniqueKey2)}`,
       );
       debug.write(MessageType.Step, 'Checking unique key 2...');
       await checkUniqueKey(query, tableName, instanceName, uniqueKey2);
@@ -159,11 +160,14 @@ export const update = async (
       updateData.table_name !== row.table_name
     ) {
       debug.write(MessageType.Step, 'Renaming data table...');
-      let text = `ALTER TABLE ${row.table_name} RENAME TO ${updateData.table_name}`;
+      let text =
+        `ALTER TABLE ${row.table_name} ` + `RENAME TO ${updateData.table_name}`;
       debug.write(MessageType.Value, `text=(${text})`);
       await query(text);
       debug.write(MessageType.Step, 'Renaming data table sequence...');
-      text = `ALTER SEQUENCE ${row.table_name}_id_seq RENAME TO ${updateData.table_name}_id_seq`;
+      text =
+        `ALTER SEQUENCE ${row.table_name}_id_seq ` +
+        `RENAME TO ${updateData.table_name}_id_seq`;
       debug.write(MessageType.Value, `text=(${text})`);
       await query(text);
     }
