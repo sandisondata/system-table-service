@@ -119,7 +119,7 @@ export const update = async (
     tableName,
     instanceName,
     primaryKey,
-    { forUpdate: true },
+    { columnNames: columnNames, forUpdate: true },
   )) as Row;
   debug.write(MessageType.Value, `row=${JSON.stringify(row)}`);
   const mergedRow: Row = Object.assign({}, row, updateData);
