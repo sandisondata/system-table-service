@@ -124,15 +124,13 @@ export const update = async (
   )) as Row;
   debug.write(MessageType.Value, `row=${JSON.stringify(row)}`);
   const mergedRow: Row = Object.assign({}, row, updateData);
+  debug.write(MessageType.Value, `mergedRow=${JSON.stringify(mergedRow)}`);
   let updatedRow: Row = Object.assign({}, mergedRow);
   if (
     !objectsEqual(pick(mergedRow, dataColumnNames), pick(row, dataColumnNames))
   ) {
     debug.write(MessageType.Step, 'Validating data...');
-    if (
-      typeof updateData.table_name !== 'undefined' &&
-      updateData.table_name !== row.table_name
-    ) {
+    if (mergedRow.table_name !== row.table_name) {
       const uniqueKey1 = { table_name: updateData.table_name };
       debug.write(
         MessageType.Value,
@@ -141,10 +139,7 @@ export const update = async (
       debug.write(MessageType.Step, 'Checking unique key 1...');
       await checkUniqueKey(query, tableName, instanceName, uniqueKey1);
     }
-    if (
-      typeof updateData.singular_table_name !== 'undefined' &&
-      updateData.singular_table_name !== row.singular_table_name
-    ) {
+    if (mergedRow.singular_table_name !== row.singular_table_name) {
       const uniqueKey2 = {
         singular_table_name: updateData.singular_table_name,
       };
@@ -155,10 +150,7 @@ export const update = async (
       debug.write(MessageType.Step, 'Checking unique key 2...');
       await checkUniqueKey(query, tableName, instanceName, uniqueKey2);
     }
-    if (
-      typeof updateData.table_name !== 'undefined' &&
-      updateData.table_name !== row.table_name
-    ) {
+    if (mergedRow.table_name !== row.table_name) {
       debug.write(MessageType.Step, 'Renaming data table...');
       let text =
         `ALTER TABLE ${row.table_name} ` + `RENAME TO ${updateData.table_name}`;

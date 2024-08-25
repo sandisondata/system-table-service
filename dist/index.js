@@ -82,18 +82,17 @@ const update = (query, primaryKey, updateData) => __awaiter(void 0, void 0, void
     const row = (yield (0, database_helpers_1.findByPrimaryKey)(query, tableName, instanceName, primaryKey, { columnNames: columnNames, forUpdate: true }));
     debug.write(node_debug_1.MessageType.Value, `row=${JSON.stringify(row)}`);
     const mergedRow = Object.assign({}, row, updateData);
+    debug.write(node_debug_1.MessageType.Value, `mergedRow=${JSON.stringify(mergedRow)}`);
     let updatedRow = Object.assign({}, mergedRow);
     if (!(0, node_utilities_1.objectsEqual)((0, node_utilities_1.pick)(mergedRow, dataColumnNames), (0, node_utilities_1.pick)(row, dataColumnNames))) {
         debug.write(node_debug_1.MessageType.Step, 'Validating data...');
-        if (typeof updateData.table_name !== 'undefined' &&
-            updateData.table_name !== row.table_name) {
+        if (mergedRow.table_name !== row.table_name) {
             const uniqueKey1 = { table_name: updateData.table_name };
             debug.write(node_debug_1.MessageType.Value, `uniqueKey1=${JSON.stringify(uniqueKey1)}`);
             debug.write(node_debug_1.MessageType.Step, 'Checking unique key 1...');
             yield (0, database_helpers_1.checkUniqueKey)(query, tableName, instanceName, uniqueKey1);
         }
-        if (typeof updateData.singular_table_name !== 'undefined' &&
-            updateData.singular_table_name !== row.singular_table_name) {
+        if (mergedRow.singular_table_name !== row.singular_table_name) {
             const uniqueKey2 = {
                 singular_table_name: updateData.singular_table_name,
             };
@@ -101,8 +100,7 @@ const update = (query, primaryKey, updateData) => __awaiter(void 0, void 0, void
             debug.write(node_debug_1.MessageType.Step, 'Checking unique key 2...');
             yield (0, database_helpers_1.checkUniqueKey)(query, tableName, instanceName, uniqueKey2);
         }
-        if (typeof updateData.table_name !== 'undefined' &&
-            updateData.table_name !== row.table_name) {
+        if (mergedRow.table_name !== row.table_name) {
             debug.write(node_debug_1.MessageType.Step, 'Renaming data table...');
             let text = `ALTER TABLE ${row.table_name} ` + `RENAME TO ${updateData.table_name}`;
             debug.write(node_debug_1.MessageType.Value, `text=(${text})`);
