@@ -18,7 +18,12 @@ const debugRows = 3;
 const tableName = '_tables';
 const instanceName = 'table';
 const primaryKeyColumnNames = ['table_uuid'];
-const dataColumnNames = ['table_name', 'singular_table_name', 'is_enabled'];
+const dataColumnNames = [
+    'table_name',
+    'singular_table_name',
+    'is_enabled',
+    'column_count',
+];
 const columnNames = [...primaryKeyColumnNames, ...dataColumnNames];
 const create = (query, createData) => __awaiter(void 0, void 0, void 0, function* () {
     const debug = new node_debug_1.Debug(`${debugSource}.create`);

@@ -17,7 +17,12 @@ const tableName = '_tables';
 const instanceName = 'table';
 
 const primaryKeyColumnNames = ['table_uuid'];
-const dataColumnNames = ['table_name', 'singular_table_name', 'is_enabled'];
+const dataColumnNames = [
+  'table_name',
+  'singular_table_name',
+  'is_enabled',
+  'column_count',
+];
 const columnNames = [...primaryKeyColumnNames, ...dataColumnNames];
 
 export type PrimaryKey = {
@@ -28,11 +33,12 @@ export type Data = {
   table_name: string;
   singular_table_name: string;
   is_enabled?: boolean;
+  column_count: number;
 };
 
-export type CreateData = PrimaryKey & Data;
+export type CreateData = PrimaryKey & Omit<Data, 'column_count'>;
 export type Row = PrimaryKey & Required<Data>;
-export type UpdateData = Partial<Data>;
+export type UpdateData = Partial<Omit<Data, 'column_count'>>;
 
 export const create = async (query: Query, createData: CreateData) => {
   const debug = new Debug(`${debugSource}.create`);

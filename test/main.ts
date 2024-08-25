@@ -52,7 +52,11 @@ describe('main', (suiteContext) => {
       await update(
         query,
         { table_uuid: uuid },
-        { table_name: 'gizmos', is_enabled: true },
+        {
+          table_name: 'gizmos',
+          singular_table_name: 'gizmo',
+          is_enabled: true,
+        },
       );
     });
     debug.write(MessageType.Exit);

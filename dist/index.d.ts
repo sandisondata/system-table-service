@@ -6,10 +6,11 @@ export type Data = {
     table_name: string;
     singular_table_name: string;
     is_enabled?: boolean;
+    column_count: number;
 };
-export type CreateData = PrimaryKey & Data;
+export type CreateData = PrimaryKey & Omit<Data, 'column_count'>;
 export type Row = PrimaryKey & Required<Data>;
-export type UpdateData = Partial<Data>;
+export type UpdateData = Partial<Omit<Data, 'column_count'>>;
 export declare const create: (query: Query, createData: CreateData) => Promise<Row>;
 export declare const find: (query: Query) => Promise<Row[]>;
 export declare const findOne: (query: Query, primaryKey: PrimaryKey) => Promise<Row>;
