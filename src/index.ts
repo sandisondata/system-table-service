@@ -47,7 +47,6 @@ export const create = async (query: Query, createData: CreateData) => {
   debug.write(MessageType.Value, `primaryKey=${JSON.stringify(primaryKey)}`);
   debug.write(MessageType.Step, 'Checking primary key...');
   await checkPrimaryKey(query, tableName, instanceName, primaryKey);
-  debug.write(MessageType.Step, 'Validating data...');
   const uniqueKey1 = { table_name: createData.table_name };
   debug.write(MessageType.Value, `uniqueKey1=${JSON.stringify(uniqueKey1)}`);
   debug.write(MessageType.Step, 'Checking unique key 1...');
@@ -135,7 +134,6 @@ export const update = async (
   if (
     !objectsEqual(pick(mergedRow, dataColumnNames), pick(row, dataColumnNames))
   ) {
-    debug.write(MessageType.Step, 'Validating data...');
     if (mergedRow.table_name !== row.table_name) {
       const uniqueKey1 = { table_name: updateData.table_name };
       debug.write(

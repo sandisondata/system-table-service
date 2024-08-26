@@ -32,7 +32,6 @@ const create = (query, createData) => __awaiter(void 0, void 0, void 0, function
     debug.write(node_debug_1.MessageType.Value, `primaryKey=${JSON.stringify(primaryKey)}`);
     debug.write(node_debug_1.MessageType.Step, 'Checking primary key...');
     yield (0, database_helpers_1.checkPrimaryKey)(query, tableName, instanceName, primaryKey);
-    debug.write(node_debug_1.MessageType.Step, 'Validating data...');
     const uniqueKey1 = { table_name: createData.table_name };
     debug.write(node_debug_1.MessageType.Value, `uniqueKey1=${JSON.stringify(uniqueKey1)}`);
     debug.write(node_debug_1.MessageType.Step, 'Checking unique key 1...');
@@ -90,7 +89,6 @@ const update = (query, primaryKey, updateData) => __awaiter(void 0, void 0, void
     debug.write(node_debug_1.MessageType.Value, `mergedRow=${JSON.stringify(mergedRow)}`);
     let updatedRow = Object.assign({}, mergedRow);
     if (!(0, node_utilities_1.objectsEqual)((0, node_utilities_1.pick)(mergedRow, dataColumnNames), (0, node_utilities_1.pick)(row, dataColumnNames))) {
-        debug.write(node_debug_1.MessageType.Step, 'Validating data...');
         if (mergedRow.table_name !== row.table_name) {
             const uniqueKey1 = { table_name: updateData.table_name };
             debug.write(node_debug_1.MessageType.Value, `uniqueKey1=${JSON.stringify(uniqueKey1)}`);
