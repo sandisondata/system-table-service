@@ -145,17 +145,71 @@ const createUniqueKey = (query, primaryKey, columns) => __awaiter(void 0, void 0
     debug.write(node_debug_1.MessageType.Step, 'Finding row by primary key...');
     const row = (yield (0, database_helpers_1.findByPrimaryKey)(query, tableName, instanceName, primaryKey, { forUpdate: true }));
     if (row.has_unique_key) {
-        throw new node_errors_1.ConflictError(`${instanceName} already has a unique key`);
+        throw new node_errors_1.ConflictError(`Table (${row.table_name}) already has a unique key`);
     }
+    if (!columns.length) {
+        throw new node_errors_1.BadRequestError('At least one column must be specified');
+    }
+    if (new Set(columns).size != columns.length) {
+        throw new node_errors_1.BadRequestError('Duplicate columns are not allowed');
+    }
+    const columnNames = [];
+    for (let i = 0; i < columns.length; i++) {
+        debug.write(node_debug_1.MessageType.Step, `Finding column ${i + 1}...`);
+        const column = (yield query('SELECT table_uuid, column_name, is_not_null ' +
+            'FROM _columns ' +
+            'WHERE column_uuid = $1 ' +
+            'LIMIT 1 FOR UPDATE', [columns[i]])).rows[0] || null;
+        if (!column) {
+            throw new node_errors_1.NotFoundError(`Column ${i + 1} not found`);
+        }
+        if (column.table_uuid !== row.table_uuid) {
+            throw new node_errors_1.NotFoundError(`Column ${i + 1} (${column.column_name}) not found on table (${row.table_name})`);
+        }
+        if (!column.is_not_null) {
+            throw new node_errors_1.BadRequestError(`Column ${i + 1} (${column.column_name}) cannot be nullable`);
+        }
+        columnNames.push(column.column_name);
+    }
+    debug.write(node_debug_1.MessageType.Step, 'Adding constraint...');
+    try {
+        yield query(`ALTER TABLE ${row.table_name} ` +
+            `ADD CONSTRAINT "${row.table_uuid}_uk" ` +
+            `UNIQUE (${columnNames.join(', ')})`);
+    }
+    catch (error) {
+        throw new Error('Could not add constraint');
+    }
+    for (let i = 0; i < columns.length; i++) {
+        debug.write(node_debug_1.MessageType.Step, `Setting column position ${i + 1}...`);
+        yield query('UPDATE _columns ' +
+            `SET unique_key_column_position = $1 ` +
+            `WHERE column_uuid = $2`, [i + 1, columns[i]]);
+    }
+    debug.write(node_debug_1.MessageType.Step, 'Updating row...');
+    yield (0, database_helpers_1.updateRow)(query, tableName, primaryKey, { has_unique_key: true });
 });
 exports.createUniqueKey = createUniqueKey;
 const deleteUniqueKey = (query, primaryKey) => __awaiter(void 0, void 0, void 0, function* () {
-    const debug = new node_debug_1.Debug(`${debugSource}.createUniqueKey`);
+    const debug = new node_debug_1.Debug(`${debugSource}.deleteUniqueKey`);
     debug.write(node_debug_1.MessageType.Entry, `primaryKey=${JSON.stringify(primaryKey)}`);
     debug.write(node_debug_1.MessageType.Step, 'Finding row by primary key...');
     const row = (yield (0, database_helpers_1.findByPrimaryKey)(query, tableName, instanceName, primaryKey, { forUpdate: true }));
     if (!row.has_unique_key) {
-        throw new node_errors_1.NotFoundError(`${instanceName} doesn't have a unique key`);
+        throw new node_errors_1.NotFoundError(`${row.table_name} table doesn't have a unique key`);
     }
+    debug.write(node_debug_1.MessageType.Step, 'Dropping constraint...');
+    try {
+        yield query(`ALTER table ${row.table_name} DROP CONSTRAINT "${row.table_uuid}_uk"`);
+    }
+    catch (error) {
+        throw new Error('Could not drop constraint');
+    }
+    debug.write(node_debug_1.MessageType.Step, 'Clearing column positions...');
+    yield query('UPDATE _columns ' +
+        'SET unique_key_column_position = null ' +
+        'WHERE unique_key_column_position IS NOT NULL');
+    debug.write(node_debug_1.MessageType.Step, 'Updating row...');
+    yield (0, database_helpers_1.updateRow)(query, tableName, primaryKey, { has_unique_key: false });
 });
 exports.deleteUniqueKey = deleteUniqueKey;

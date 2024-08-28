@@ -244,6 +244,7 @@ export const createUniqueKey = async (
   }
   const columnNames: string[] = [];
   for (let i = 0; i < columns.length; i++) {
+    debug.write(MessageType.Step, `Finding column ${i + 1}...`);
     const column: UniqueKeyColumn | null =
       (
         await query(
