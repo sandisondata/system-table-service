@@ -9,22 +9,23 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.delete_ = exports.update = exports.findOne = exports.find = exports.create = void 0;
+exports.deleteUniqueKey = exports.createUniqueKey = exports.delete_ = exports.update = exports.findOne = exports.find = exports.create = void 0;
 const database_helpers_1 = require("database-helpers");
 const node_debug_1 = require("node-debug");
+const node_errors_1 = require("node-errors");
 const node_utilities_1 = require("node-utilities");
 const debugSource = 'table.service';
 const debugRows = 3;
 const tableName = '_tables';
 const instanceName = 'table';
 const primaryKeyColumnNames = ['table_uuid'];
-const dataColumnNames = [
-    'table_name',
-    'singular_table_name',
-    'is_enabled',
-    'column_count',
+const dataColumnNames = ['table_name', 'singular_table_name', 'is_enabled'];
+const systemColumnNames = ['column_count', 'has_unique_key'];
+const columnNames = [
+    ...primaryKeyColumnNames,
+    ...dataColumnNames,
+    ...systemColumnNames,
 ];
-const columnNames = [...primaryKeyColumnNames, ...dataColumnNames];
 const create = (query, createData) => __awaiter(void 0, void 0, void 0, function* () {
     const debug = new node_debug_1.Debug(`${debugSource}.create`);
     debug.write(node_debug_1.MessageType.Entry, `createData=${JSON.stringify(createData)}`);
@@ -137,3 +138,24 @@ const delete_ = (query, primaryKey) => __awaiter(void 0, void 0, void 0, functio
     debug.write(node_debug_1.MessageType.Exit);
 });
 exports.delete_ = delete_;
+const createUniqueKey = (query, primaryKey, columns) => __awaiter(void 0, void 0, void 0, function* () {
+    const debug = new node_debug_1.Debug(`${debugSource}.createUniqueKey`);
+    debug.write(node_debug_1.MessageType.Entry, `primaryKey=${JSON.stringify(primaryKey)};` +
+        `columns=${JSON.stringify(columns)}`);
+    debug.write(node_debug_1.MessageType.Step, 'Finding row by primary key...');
+    const row = (yield (0, database_helpers_1.findByPrimaryKey)(query, tableName, instanceName, primaryKey, { forUpdate: true }));
+    if (row.has_unique_key) {
+        throw new node_errors_1.ConflictError(`${instanceName} already has a unique key`);
+    }
+});
+exports.createUniqueKey = createUniqueKey;
+const deleteUniqueKey = (query, primaryKey) => __awaiter(void 0, void 0, void 0, function* () {
+    const debug = new node_debug_1.Debug(`${debugSource}.createUniqueKey`);
+    debug.write(node_debug_1.MessageType.Entry, `primaryKey=${JSON.stringify(primaryKey)}`);
+    debug.write(node_debug_1.MessageType.Step, 'Finding row by primary key...');
+    const row = (yield (0, database_helpers_1.findByPrimaryKey)(query, tableName, instanceName, primaryKey, { forUpdate: true }));
+    if (!row.has_unique_key) {
+        throw new node_errors_1.NotFoundError(`${instanceName} doesn't have a unique key`);
+    }
+});
+exports.deleteUniqueKey = deleteUniqueKey;

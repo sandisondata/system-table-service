@@ -8,6 +8,7 @@ import {
   updateRow,
 } from 'database-helpers';
 import { Debug, MessageType } from 'node-debug';
+import { BadRequestError, ConflictError, NotFoundError } from 'node-errors';
 import { objectsEqual, pick } from 'node-utilities';
 
 const debugSource = 'table.service';
@@ -17,13 +18,13 @@ const tableName = '_tables';
 const instanceName = 'table';
 
 const primaryKeyColumnNames = ['table_uuid'];
-const dataColumnNames = [
-  'table_name',
-  'singular_table_name',
-  'is_enabled',
-  'column_count',
+const dataColumnNames = ['table_name', 'singular_table_name', 'is_enabled'];
+const systemColumnNames = ['column_count', 'has_unique_key'];
+const columnNames = [
+  ...primaryKeyColumnNames,
+  ...dataColumnNames,
+  ...systemColumnNames,
 ];
-const columnNames = [...primaryKeyColumnNames, ...dataColumnNames];
 
 export type PrimaryKey = {
   table_uuid: string;
@@ -33,12 +34,16 @@ export type Data = {
   table_name: string;
   singular_table_name: string;
   is_enabled?: boolean;
-  column_count: number;
 };
 
-export type CreateData = PrimaryKey & Omit<Data, 'column_count'>;
-export type Row = PrimaryKey & Required<Data>;
-export type UpdateData = Partial<Omit<Data, 'column_count'>>;
+export type System = {
+  column_count: number;
+  has_unique_key: boolean;
+};
+
+export type CreateData = PrimaryKey & Data;
+export type Row = PrimaryKey & Data & System;
+export type UpdateData = Partial<Data>;
 
 export const create = async (query: Query, createData: CreateData) => {
   const debug = new Debug(`${debugSource}.create`);
@@ -199,4 +204,124 @@ export const delete_ = async (query: Query, primaryKey: PrimaryKey) => {
   debug.write(MessageType.Step, 'Deleting row...');
   await deleteRow(query, tableName, primaryKey);
   debug.write(MessageType.Exit);
+};
+
+type UniqueKeyColumn = {
+  table_uuid: string;
+  column_name: string;
+  is_not_null: boolean;
+};
+
+export const createUniqueKey = async (
+  query: Query,
+  primaryKey: PrimaryKey,
+  columns: string[],
+) => {
+  const debug = new Debug(`${debugSource}.createUniqueKey`);
+  debug.write(
+    MessageType.Entry,
+    `primaryKey=${JSON.stringify(primaryKey)};` +
+      `columns=${JSON.stringify(columns)}`,
+  );
+  debug.write(MessageType.Step, 'Finding row by primary key...');
+  const row = (await findByPrimaryKey(
+    query,
+    tableName,
+    instanceName,
+    primaryKey,
+    { forUpdate: true },
+  )) as Row;
+  if (row.has_unique_key) {
+    throw new ConflictError(
+      `Table (${row.table_name}) already has a unique key`,
+    );
+  }
+  if (!columns.length) {
+    throw new BadRequestError('At least one column must be specified');
+  }
+  if (new Set(columns).size != columns.length) {
+    throw new BadRequestError('Duplicate columns are not allowed');
+  }
+  const columnNames: string[] = [];
+  for (let i = 0; i < columns.length; i++) {
+    const column: UniqueKeyColumn | null =
+      (
+        await query(
+          'SELECT table_uuid, column_name, is_not_null ' +
+            'FROM _columns ' +
+            'WHERE column_uuid = $1 ' +
+            'LIMIT 1 FOR UPDATE',
+          [columns[i]],
+        )
+      ).rows[0] || null;
+    if (!column) {
+      throw new NotFoundError(`Column ${i + 1} not found`);
+    }
+    if (column.table_uuid !== row.table_uuid) {
+      throw new NotFoundError(
+        `Column ${i + 1} (${column.column_name}) not found on table (${row.table_name})`,
+      );
+    }
+    if (!column.is_not_null) {
+      throw new BadRequestError(
+        `Column ${i + 1} (${column.column_name}) cannot be nullable`,
+      );
+    }
+    columnNames.push(column.column_name);
+  }
+  debug.write(MessageType.Step, 'Adding constraint...');
+  try {
+    await query(
+      `ALTER TABLE ${row.table_name} ` +
+        `ADD CONSTRAINT "${row.table_uuid}_uk" ` +
+        `UNIQUE (${columnNames.join(', ')})`,
+    );
+  } catch (error) {
+    throw new Error('Could not add constraint');
+  }
+  for (let i = 0; i < columns.length; i++) {
+    debug.write(MessageType.Step, `Setting column position ${i + 1}...`);
+    await query(
+      'UPDATE _columns ' +
+        `SET unique_key_column_position = $1 ` +
+        `WHERE column_uuid = $2`,
+      [i + 1, columns[i]],
+    );
+  }
+  debug.write(MessageType.Step, 'Updating row...');
+  await updateRow(query, tableName, primaryKey, { has_unique_key: true });
+};
+
+export const deleteUniqueKey = async (query: Query, primaryKey: PrimaryKey) => {
+  const debug = new Debug(`${debugSource}.deleteUniqueKey`);
+  debug.write(MessageType.Entry, `primaryKey=${JSON.stringify(primaryKey)}`);
+  debug.write(MessageType.Step, 'Finding row by primary key...');
+  const row = (await findByPrimaryKey(
+    query,
+    tableName,
+    instanceName,
+    primaryKey,
+    { forUpdate: true },
+  )) as Row;
+  if (!row.has_unique_key) {
+    throw new NotFoundError(
+      `${row.table_name} table doesn't have a unique key`,
+    );
+  }
+  debug.write(MessageType.Step, 'Dropping constraint...');
+  try {
+    await query(
+      `ALTER table ${row.table_name} DROP CONSTRAINT "${row.table_uuid}_uk"`,
+    );
+  } catch (error) {
+    throw new Error('Could not drop constraint');
+  }
+  debug.write(MessageType.Step, 'Clearing column positions...');
+  await query(
+    'UPDATE _columns ' +
+      'SET unique_key_column_position = null ' +
+      'WHERE unique_key_column_position IS NOT NULL',
+  );
+  debug.write(MessageType.Step, 'Updating row...');
+  await updateRow(query, tableName, primaryKey, { has_unique_key: false });
 };
