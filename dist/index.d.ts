@@ -9,7 +9,7 @@ export type Data = {
 };
 export type System = {
     column_count: number;
-    unique_key: string;
+    unique_key: string | null;
 };
 export type CreateData = PrimaryKey & Data;
 export type Row = PrimaryKey & Data & System;
