@@ -3,9 +3,7 @@ import assert from 'node:assert/strict';
 
 import { Database } from 'database';
 import { Debug, MessageType } from 'node-debug';
-import { create, delete_, find, findOne, update } from '../dist';
-
-import { v4 as uuidv4 } from 'uuid';
+import { create, CreatedRow, delete_, find, findOne, update } from '../dist';
 
 describe('main', (suiteContext) => {
   Debug.initialise(true);
@@ -15,18 +13,17 @@ describe('main', (suiteContext) => {
     const debug = new Debug(`${suiteContext.name}.before`);
     debug.write(MessageType.Entry);
     database = Database.getInstance();
-    uuid = uuidv4();
     debug.write(MessageType.Exit);
   });
   it('create', async (testContext) => {
     const debug = new Debug(`${suiteContext.name}.test.${testContext.name}`);
     debug.write(MessageType.Entry);
     await database.transaction(async (query) => {
-      await create(query, {
-        table_uuid: uuid,
-        table_name: 'gadgets',
-        singular_table_name: 'gadget',
-      });
+      const createdRow = (await create(query, {
+        name: 'gadgets',
+        singular_name: 'gadget',
+      })) as CreatedRow;
+      uuid = createdRow.uuid;
     });
     debug.write(MessageType.Exit);
     assert.ok(true);
@@ -41,7 +38,7 @@ describe('main', (suiteContext) => {
   it('findOne', async (testContext) => {
     const debug = new Debug(`${suiteContext.name}.test.${testContext.name}`);
     debug.write(MessageType.Entry);
-    await findOne(database.query, { table_uuid: uuid });
+    await findOne(database.query, { uuid: uuid });
     debug.write(MessageType.Exit);
     assert.ok(true);
   });
@@ -51,10 +48,10 @@ describe('main', (suiteContext) => {
     await database.transaction(async (query) => {
       await update(
         query,
-        { table_uuid: uuid },
+        { uuid: uuid },
         {
-          table_name: 'gizmos',
-          singular_table_name: 'gizmo',
+          name: 'gizmos',
+          singular_name: 'gizmo',
           is_enabled: true,
         },
       );
@@ -66,7 +63,7 @@ describe('main', (suiteContext) => {
     const debug = new Debug(`${suiteContext.name}.test.${testContext.name}`);
     debug.write(MessageType.Entry);
     await database.transaction(async (query) => {
-      await delete_(query, { table_uuid: uuid });
+      await delete_(query, { uuid: uuid });
     });
     debug.write(MessageType.Exit);
     assert.ok(true);
