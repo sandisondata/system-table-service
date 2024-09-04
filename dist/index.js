@@ -145,7 +145,7 @@ const createUniqueKey = (query, primaryKey, columns) => __awaiter(void 0, void 0
     debug.write(node_debug_1.MessageType.Entry, `primaryKey=${JSON.stringify(primaryKey)};` +
         `columns=${JSON.stringify(columns)}`);
     debug.write(node_debug_1.MessageType.Step, 'Finding row by primary key...');
-    const row = (yield (0, database_helpers_1.findByPrimaryKey)(query, tableName, instanceName, primaryKey, { forUpdate: true }));
+    const row = (yield (0, database_helpers_1.findByPrimaryKey)(query, tableName, instanceName, primaryKey, { columnNames: columnNames, forUpdate: true }));
     if (row.unique_key) {
         throw new node_errors_1.ConflictError(`Table (${row.name}) already has a unique key`);
     }
@@ -155,14 +155,14 @@ const createUniqueKey = (query, primaryKey, columns) => __awaiter(void 0, void 0
     if (new Set(columns).size != columns.length) {
         throw new node_errors_1.BadRequestError('Duplicate columns are not allowed');
     }
-    const columnNames = [];
+    const names = [];
     let text = '';
-    debug.write(node_debug_1.MessageType.Step, 'Finding columns (for update)...');
+    debug.write(node_debug_1.MessageType.Step, 'Finding columns...');
     for (let i = 0; i < columns.length; i++) {
         text =
-            'SELECT uuid, column_name, is_not_null ' +
+            'SELECT uuid, name, is_not_null ' +
                 'FROM _columns ' +
-                `WHERE column_uuid = "${columns[i]}" ` +
+                `WHERE uuid = "${columns[i]}" ` +
                 'FOR UPDATE';
         debug.write(node_debug_1.MessageType.Value, `text=(${text})`);
         const column = (yield query(text)).rows[0] || null;
@@ -170,19 +170,19 @@ const createUniqueKey = (query, primaryKey, columns) => __awaiter(void 0, void 0
             throw new node_errors_1.NotFoundError(`Column ${i + 1} not found`);
         }
         if (column.uuid !== row.uuid) {
-            throw new node_errors_1.NotFoundError(`Column ${i + 1} (${column.column_name}) not found on table (${row.name})`);
+            throw new node_errors_1.NotFoundError(`Column ${i + 1} (${column.name}) not found on table (${row.name})`);
         }
         if (!column.is_not_null) {
-            throw new node_errors_1.BadRequestError(`Column ${i + 1} (${column.column_name}) cannot be nullable`);
+            throw new node_errors_1.BadRequestError(`Column ${i + 1} (${column.name}) cannot be nullable`);
         }
-        columnNames.push(column.column_name);
+        names.push(column.name);
     }
     debug.write(node_debug_1.MessageType.Step, 'Adding constraint...');
     try {
         text =
             `ALTER TABLE ${row.name} ` +
                 `ADD CONSTRAINT "${row.uuid}_uk" ` +
-                `UNIQUE (${columnNames.join(', ')})`;
+                `UNIQUE (${names.join(', ')})`;
         debug.write(node_debug_1.MessageType.Value, `text=(${text})`);
         yield query(text);
     }
@@ -194,7 +194,7 @@ const createUniqueKey = (query, primaryKey, columns) => __awaiter(void 0, void 0
         text =
             'UPDATE _columns ' +
                 `SET position_in_unique_key = ${i + 1} ` +
-                `WHERE column_uuid = "${columns[i]}"`;
+                `WHERE uuid = "${columns[i]}"`;
         debug.write(node_debug_1.MessageType.Value, `text=(${text})`);
         yield query(text);
     }
@@ -208,18 +208,11 @@ const deleteUniqueKey = (query, primaryKey) => __awaiter(void 0, void 0, void 0,
     const debug = new node_debug_1.Debug(`${debugSource}.deleteUniqueKey`);
     debug.write(node_debug_1.MessageType.Entry, `primaryKey=${JSON.stringify(primaryKey)}`);
     debug.write(node_debug_1.MessageType.Step, 'Finding row by primary key...');
-    const row = (yield (0, database_helpers_1.findByPrimaryKey)(query, tableName, instanceName, primaryKey, { forUpdate: true }));
+    const row = (yield (0, database_helpers_1.findByPrimaryKey)(query, tableName, instanceName, primaryKey, { columnNames: columnNames, forUpdate: true }));
     if (!row.unique_key) {
         throw new node_errors_1.NotFoundError(`${row.name} table does not have a unique key`);
     }
-    const columns = JSON.parse(row.unique_key).columns;
-    debug.write(node_debug_1.MessageType.Step, 'Finding columns (for update)...');
-    let text = 'SELECT 1 ' +
-        'FROM _columns ' +
-        `WHERE column_uuid IN (${columns.map((x) => `"${x}"`).join(', ')})` +
-        'FOR UPDATE';
-    debug.write(node_debug_1.MessageType.Value, `text=(${text})`);
-    yield query(text);
+    let text = '';
     debug.write(node_debug_1.MessageType.Step, 'Dropping constraint...');
     try {
         text = `ALTER table ${row.name} ` + `DROP CONSTRAINT "${row.uuid}_uk"`;
@@ -230,6 +223,7 @@ const deleteUniqueKey = (query, primaryKey) => __awaiter(void 0, void 0, void 0,
         throw new Error('Could not drop constraint');
     }
     debug.write(node_debug_1.MessageType.Step, 'Clearing column positions...');
+    const columns = JSON.parse(row.unique_key).columns;
     text =
         'UPDATE _columns ' +
             'SET position_in_unique_key = null ' +
