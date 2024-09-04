@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 
 import { Database } from 'database';
 import { Debug, MessageType } from 'node-debug';
-import { create, CreatedRow, delete_, find, findOne, update } from '../dist';
+import { create, delete_, find, findOne, update } from '../dist';
 
 describe('main', (suiteContext) => {
   Debug.initialise(true);
@@ -19,10 +19,10 @@ describe('main', (suiteContext) => {
     const debug = new Debug(`${suiteContext.name}.test.${testContext.name}`);
     debug.write(MessageType.Entry);
     await database.transaction(async (query) => {
-      const createdRow = (await create(query, {
+      const createdRow = await create(query, {
         name: 'gadgets',
         singular_name: 'gadget',
-      })) as CreatedRow;
+      });
       uuid = createdRow.uuid;
     });
     debug.write(MessageType.Exit);
