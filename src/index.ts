@@ -27,7 +27,7 @@ const columnNames = [
 ];
 
 export type PrimaryKey = {
-  uuid?: string;
+  uuid: string;
 };
 
 export type Data = {
@@ -41,10 +41,10 @@ export type System = {
   unique_key: string | null;
 };
 
-export type CreateData = PrimaryKey & Data;
+export type CreateData = Partial<PrimaryKey> & Data;
 export type CreatedRow = Row;
 
-export type Row = Required<PrimaryKey> & Required<Data> & System;
+export type Row = PrimaryKey & Required<Data> & System;
 
 export type UpdateData = Partial<Data>;
 export type UpdatedRow = Row;
@@ -55,7 +55,7 @@ export const create = async (
 ): Promise<CreatedRow> => {
   const debug = new Debug(`${debugSource}.create`);
   debug.write(MessageType.Entry, `createData=${JSON.stringify(createData)}`);
-  if (typeof createData !== 'undefined') {
+  if (typeof createData.uuid !== 'undefined') {
     const primaryKey: PrimaryKey = { uuid: createData.uuid };
     debug.write(MessageType.Value, `primaryKey=${JSON.stringify(primaryKey)}`);
     debug.write(MessageType.Step, 'Checking primary key...');
