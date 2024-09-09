@@ -42,17 +42,10 @@ export type System = {
 };
 
 export type CreateData = Partial<PrimaryKey> & Data;
-export type CreatedRow = Row;
-
 export type Row = PrimaryKey & Required<Data> & System;
-
 export type UpdateData = Partial<Data>;
-export type UpdatedRow = Row;
 
-export const create = async (
-  query: Query,
-  createData: CreateData,
-): Promise<CreatedRow> => {
+export const create = async (query: Query, createData: CreateData) => {
   const debug = new Debug(`${debugSource}.create`);
   debug.write(MessageType.Entry, `createData=${JSON.stringify(createData)}`);
   if (typeof createData.uuid !== 'undefined') {
@@ -126,7 +119,7 @@ export const update = async (
   query: Query,
   primaryKey: PrimaryKey,
   updateData: UpdateData,
-): Promise<UpdatedRow> => {
+) => {
   const debug = new Debug(`${debugSource}.update`);
   debug.write(
     MessageType.Entry,
