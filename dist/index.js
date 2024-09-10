@@ -26,6 +26,12 @@ const columnNames = [
     ...dataColumnNames,
     ...systemColumnNames,
 ];
+const checkName = (name) => {
+    const suffix = '_lookup_values';
+    if (RegExp(`${suffix}$`).test(name)) {
+        throw new node_errors_1.BadRequestError(`name with suffix "${suffix}" is not allowed`);
+    }
+};
 const create = (query, createData) => __awaiter(void 0, void 0, void 0, function* () {
     const debug = new node_debug_1.Debug(`${debugSource}.create`);
     debug.write(node_debug_1.MessageType.Entry, `createData=${JSON.stringify(createData)}`);
@@ -35,6 +41,8 @@ const create = (query, createData) => __awaiter(void 0, void 0, void 0, function
         debug.write(node_debug_1.MessageType.Step, 'Checking primary key...');
         yield (0, database_helpers_1.checkPrimaryKey)(query, tableName, instanceName, primaryKey);
     }
+    debug.write(node_debug_1.MessageType.Step, 'Checking name...');
+    checkName(createData.name);
     const uniqueKey1 = { name: createData.name };
     debug.write(node_debug_1.MessageType.Value, `uniqueKey1=${JSON.stringify(uniqueKey1)}`);
     debug.write(node_debug_1.MessageType.Step, 'Checking unique key 1...');
@@ -93,6 +101,8 @@ const update = (query, primaryKey, updateData) => __awaiter(void 0, void 0, void
     let updatedRow = Object.assign({}, mergedRow);
     if (!(0, node_utilities_1.objectsEqual)((0, node_utilities_1.pick)(mergedRow, dataColumnNames), (0, node_utilities_1.pick)(row, dataColumnNames))) {
         if (mergedRow.name !== row.name) {
+            debug.write(node_debug_1.MessageType.Step, 'Checking name...');
+            checkName(updateData.name);
             const uniqueKey1 = { name: updateData.name };
             debug.write(node_debug_1.MessageType.Value, `uniqueKey1=${JSON.stringify(uniqueKey1)}`);
             debug.write(node_debug_1.MessageType.Step, 'Checking unique key 1...');

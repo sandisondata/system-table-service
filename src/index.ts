@@ -26,6 +26,13 @@ const columnNames = [
   ...systemColumnNames,
 ];
 
+const checkName = (name: string) => {
+  const suffix = '_lookup_values';
+  if (RegExp(`${suffix}$`).test(name)) {
+    throw new BadRequestError(`name with suffix "${suffix}" is not allowed`);
+  }
+};
+
 export type PrimaryKey = {
   uuid: string;
 };
@@ -54,6 +61,8 @@ export const create = async (query: Query, createData: CreateData) => {
     debug.write(MessageType.Step, 'Checking primary key...');
     await checkPrimaryKey(query, tableName, instanceName, primaryKey);
   }
+  debug.write(MessageType.Step, 'Checking name...');
+  checkName(createData.name);
   const uniqueKey1 = { name: createData.name };
   debug.write(MessageType.Value, `uniqueKey1=${JSON.stringify(uniqueKey1)}`);
   debug.write(MessageType.Step, 'Checking unique key 1...');
@@ -142,7 +151,9 @@ export const update = async (
     !objectsEqual(pick(mergedRow, dataColumnNames), pick(row, dataColumnNames))
   ) {
     if (mergedRow.name !== row.name) {
-      const uniqueKey1 = { name: updateData.name };
+      debug.write(MessageType.Step, 'Checking name...');
+      checkName(updateData.name!);
+      const uniqueKey1 = { name: updateData.name! };
       debug.write(
         MessageType.Value,
         `uniqueKey1=${JSON.stringify(uniqueKey1)}`,
@@ -152,7 +163,7 @@ export const update = async (
     }
     if (mergedRow.singular_name !== row.singular_name) {
       const uniqueKey2 = {
-        singular_name: updateData.singular_name,
+        singular_name: updateData.singular_name!,
       };
       debug.write(
         MessageType.Value,
