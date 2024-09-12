@@ -15,8 +15,6 @@ const debugSource = 'table.service';
 const debugRows = 3;
 
 const tableName = '_tables';
-const instanceName = 'table';
-
 const primaryKeyColumnNames = ['uuid'];
 const dataColumnNames = ['name', 'singular_name', 'is_enabled'];
 const systemColumnNames = ['column_count', 'unique_key'];
@@ -59,18 +57,18 @@ export const create = async (query: Query, createData: CreateData) => {
     const primaryKey: PrimaryKey = { uuid: createData.uuid };
     debug.write(MessageType.Value, `primaryKey=${JSON.stringify(primaryKey)}`);
     debug.write(MessageType.Step, 'Checking primary key...');
-    await checkPrimaryKey(query, tableName, instanceName, primaryKey);
+    await checkPrimaryKey(query, tableName, primaryKey);
   }
   debug.write(MessageType.Step, 'Checking name...');
   checkName(createData.name);
   const uniqueKey1 = { name: createData.name };
   debug.write(MessageType.Value, `uniqueKey1=${JSON.stringify(uniqueKey1)}`);
   debug.write(MessageType.Step, 'Checking unique key 1...');
-  await checkUniqueKey(query, tableName, instanceName, uniqueKey1);
+  await checkUniqueKey(query, tableName, uniqueKey1);
   const uniqueKey2 = { singular_name: createData.singular_name };
   debug.write(MessageType.Value, `uniqueKey2=${JSON.stringify(uniqueKey2)}`);
   debug.write(MessageType.Step, 'Checking unique key 2...');
-  await checkUniqueKey(query, tableName, instanceName, uniqueKey2);
+  await checkUniqueKey(query, tableName, uniqueKey2);
   debug.write(MessageType.Step, 'Creating row...');
   const createdRow = (await createRow(
     query,
@@ -109,17 +107,18 @@ export const find = async (query: Query) => {
   return rows;
 };
 
-export const findOne = async (query: Query, primaryKey: PrimaryKey) => {
+export const findOne = async (
+  query: Query,
+  primaryKey: PrimaryKey,
+  forUpdate = false,
+) => {
   const debug = new Debug(`${debugSource}.findOne`);
   debug.write(MessageType.Entry, `primaryKey=${JSON.stringify(primaryKey)}`);
   debug.write(MessageType.Step, 'Finding row by primary key...');
-  const row = (await findByPrimaryKey(
-    query,
-    tableName,
-    instanceName,
-    primaryKey,
-    { columnNames: columnNames },
-  )) as Row;
+  const row = (await findByPrimaryKey(query, tableName, primaryKey, {
+    columnNames: columnNames,
+    forUpdate: forUpdate,
+  })) as Row;
   debug.write(MessageType.Exit, `row=${JSON.stringify(row)}`);
   return row;
 };
@@ -136,13 +135,10 @@ export const update = async (
       `updateData=${JSON.stringify(updateData)}`,
   );
   debug.write(MessageType.Step, 'Finding row by primary key...');
-  const row = (await findByPrimaryKey(
-    query,
-    tableName,
-    instanceName,
-    primaryKey,
-    { columnNames: columnNames, forUpdate: true },
-  )) as Row;
+  const row = (await findByPrimaryKey(query, tableName, primaryKey, {
+    columnNames: columnNames,
+    forUpdate: true,
+  })) as Row;
   debug.write(MessageType.Value, `row=${JSON.stringify(row)}`);
   const mergedRow: Row = Object.assign({}, row, updateData);
   debug.write(MessageType.Value, `mergedRow=${JSON.stringify(mergedRow)}`);
@@ -159,7 +155,7 @@ export const update = async (
         `uniqueKey1=${JSON.stringify(uniqueKey1)}`,
       );
       debug.write(MessageType.Step, 'Checking unique key 1...');
-      await checkUniqueKey(query, tableName, instanceName, uniqueKey1);
+      await checkUniqueKey(query, tableName, uniqueKey1);
     }
     if (mergedRow.singular_name !== row.singular_name) {
       const uniqueKey2 = {
@@ -170,7 +166,7 @@ export const update = async (
         `uniqueKey2=${JSON.stringify(uniqueKey2)}`,
       );
       debug.write(MessageType.Step, 'Checking unique key 2...');
-      await checkUniqueKey(query, tableName, instanceName, uniqueKey2);
+      await checkUniqueKey(query, tableName, uniqueKey2);
     }
     debug.write(MessageType.Step, 'Updating row...');
     updatedRow = (await updateRow(
@@ -201,14 +197,12 @@ export const delete_ = async (query: Query, primaryKey: PrimaryKey) => {
   const debug = new Debug(`${debugSource}.delete`);
   debug.write(MessageType.Entry, `primaryKey=${JSON.stringify(primaryKey)}`);
   debug.write(MessageType.Step, 'Finding row by primary key...');
-  const row = (await findByPrimaryKey(
-    query,
-    tableName,
-    instanceName,
-    primaryKey,
-    { columnNames: columnNames, forUpdate: true },
-  )) as Row;
+  const row = (await findByPrimaryKey(query, tableName, primaryKey, {
+    columnNames: columnNames,
+    forUpdate: true,
+  })) as Row;
   debug.write(MessageType.Value, `row=${JSON.stringify(row)}`);
+  // TODO: Check foreign key instance(s) exist (add to database-helpers)
   debug.write(MessageType.Step, 'Deleting row...');
   await deleteRow(query, tableName, primaryKey);
   debug.write(MessageType.Step, 'Dropping data table (and sequence)...');
@@ -236,13 +230,10 @@ export const createUniqueKey = async (
       `columns=${JSON.stringify(columns)}`,
   );
   debug.write(MessageType.Step, 'Finding row by primary key...');
-  const row = (await findByPrimaryKey(
-    query,
-    tableName,
-    instanceName,
-    primaryKey,
-    { columnNames: columnNames, forUpdate: true },
-  )) as Row;
+  const row = (await findByPrimaryKey(query, tableName, primaryKey, {
+    columnNames: columnNames,
+    forUpdate: true,
+  })) as Row;
   if (row.unique_key) {
     throw new ConflictError(`Table (${row.name}) already has a unique key`);
   }
@@ -308,13 +299,10 @@ export const deleteUniqueKey = async (query: Query, primaryKey: PrimaryKey) => {
   const debug = new Debug(`${debugSource}.deleteUniqueKey`);
   debug.write(MessageType.Entry, `primaryKey=${JSON.stringify(primaryKey)}`);
   debug.write(MessageType.Step, 'Finding row by primary key...');
-  const row = (await findByPrimaryKey(
-    query,
-    tableName,
-    instanceName,
-    primaryKey,
-    { columnNames: columnNames, forUpdate: true },
-  )) as Row;
+  const row = (await findByPrimaryKey(query, tableName, primaryKey, {
+    columnNames: columnNames,
+    forUpdate: true,
+  })) as Row;
   if (!row.unique_key) {
     throw new NotFoundError(`${row.name} table does not have a unique key`);
   }
