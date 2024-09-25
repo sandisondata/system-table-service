@@ -1,7 +1,7 @@
 {
   "name": "repository-table-service",
   "version": "1.0.0",
-  "description": "Structured Data Repository - Table Service",
+  "description": "Repository Table Service",
   "author": "Grant Fortington",
   "private": true,
   "license": "MIT",
@@ -16,7 +16,7 @@
     "database-helpers": "github:sandisondata/database-helpers",
     "node-debug": "github:gwfortington/node-debug",
     "node-errors": "github:gwfortington/node-errors",
-    "node-utilities": "github:gwfortington/node-utilities"
+    "repository-service-class": "github:sandisondata/repository-service-class"
   },
   "devDependencies": {
     "@tsconfig/recommended": "^1.0.6",
