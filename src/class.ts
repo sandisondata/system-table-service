@@ -168,7 +168,7 @@ export class RepositoryTableService extends RepositoryService<
     if (new Set(columns).size != columns.length) {
       throw new BadRequestError('Duplicate columns are not allowed');
     }
-    const names: string[] = [];
+    const columnNames: string[] = [];
     let text = '';
     debug.write(MessageType.Step, 'Finding columns...');
     for (let i = 0; i < columns.length; i++) {
@@ -193,14 +193,14 @@ export class RepositoryTableService extends RepositoryService<
           `Column ${i + 1} (${column.name}) cannot be nullable`,
         );
       }
-      names.push(column.name);
+      columnNames.push(column.name);
     }
     debug.write(MessageType.Step, 'Adding constraint...');
     try {
       text =
         `ALTER TABLE ${row.name} ` +
         `ADD CONSTRAINT "${row.uuid}_uk" ` +
-        `UNIQUE (${names.join(', ')})`;
+        `UNIQUE (${columnNames.join(', ')})`;
       debug.write(MessageType.Value, `text=(${text})`);
       await query(text);
     } catch (error) {
