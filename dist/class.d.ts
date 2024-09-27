@@ -10,8 +10,8 @@ export type Data = {
     is_enabled?: boolean;
 };
 export type System = {
-    column_count: number;
-    unique_key: string | null;
+    column_count?: number;
+    unique_key?: string | null;
 };
 export declare class RepositoryTableService extends RepositoryService<PrimaryKey, Data, System> {
     preCreate(): Promise<void>;

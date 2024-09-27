@@ -16,8 +16,8 @@ export type Data = {
 };
 
 export type System = {
-  column_count: number;
-  unique_key: string | null;
+  column_count?: number;
+  unique_key?: string | null;
 };
 
 type UniqueKeyColumn = {
