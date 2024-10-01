@@ -1,4 +1,5 @@
 import { RepositoryTableService } from './class';
+
 export {
   CreateData,
   Data,

@@ -3,6 +3,7 @@ import { checkUniqueKey, findByPrimaryKey, updateRow } from 'database-helpers';
 import { Debug, MessageType } from 'node-debug';
 import { BadRequestError, ConflictError, NotFoundError } from 'node-errors';
 import { RepositoryService, Row } from 'repository-service-class';
+
 export { CreateData, Query, Row, UpdateData } from 'repository-service-class';
 
 export type PrimaryKey = {
