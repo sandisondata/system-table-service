@@ -1,20 +1,23 @@
-import { RepositoryTableService } from './class';
-
-const repositoryTableService = new RepositoryTableService(
-  'repository-table-service',
-  '_tables',
-  ['uuid'],
-  ['name', 'singular_name', 'is_enabled'],
-  ['column_count', 'unique_key'],
-);
-
-export { repositoryTableService };
-export {
+import {
   CreateData,
   Data,
   PrimaryKey,
   Query,
   Row,
+  Service,
   System,
   UpdateData,
 } from './class';
+
+export { CreateData, Data, PrimaryKey, Query, Row, System, UpdateData };
+
+const service = new Service(
+  'system-table-service',
+  '_tables',
+  ['uuid'],
+  ['name', 'singular_name', 'is_enabled'],
+  false,
+  ['column_count', 'unique_key'],
+);
+
+export { service };

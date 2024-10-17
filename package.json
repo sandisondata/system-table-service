@@ -1,7 +1,7 @@
 {
-  "name": "repository-table-service",
+  "name": "system-table-service",
   "version": "1.0.0",
-  "description": "Repository Table Service",
+  "description": "System table service",
   "author": "Grant Fortington",
   "private": true,
   "license": "MIT",
@@ -12,11 +12,11 @@
     "test": "rimraf --glob \"test/**/*.js\" && tsc -p tsconfig-test.json && node --env-file .test.env --test"
   },
   "dependencies": {
+    "base-service-class": "github:sandisondata/base-service-class",
     "database": "github:sandisondata/database",
     "database-helpers": "github:sandisondata/database-helpers",
     "node-debug": "github:gwfortington/node-debug",
-    "node-errors": "github:gwfortington/node-errors",
-    "repository-service-class": "github:sandisondata/repository-service-class"
+    "node-errors": "github:gwfortington/node-errors"
   },
   "devDependencies": {
     "@tsconfig/recommended": "^1.0.6",

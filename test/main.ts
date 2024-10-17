@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 
 import { Database } from 'database';
 import { Debug, MessageType } from 'node-debug';
-import { repositoryTableService } from '../dist';
+import { service } from '../dist';
 
 describe('main', (suiteContext) => {
   Debug.initialise(true);
@@ -19,7 +19,7 @@ describe('main', (suiteContext) => {
     const debug = new Debug(`${suiteContext.name}.test.${testContext.name}`);
     debug.write(MessageType.Entry);
     await database.transaction(async (query) => {
-      const row = await repositoryTableService.create(query, {
+      const row = await service.create(query, {
         name: 'gadgets',
         singular_name: 'gadget',
       });
@@ -31,14 +31,14 @@ describe('main', (suiteContext) => {
   it('find', async (testContext) => {
     const debug = new Debug(`${suiteContext.name}.test.${testContext.name}`);
     debug.write(MessageType.Entry);
-    await repositoryTableService.find(database.query);
+    await service.find(database.query);
     debug.write(MessageType.Exit);
     assert.ok(true);
   });
   it('findOne', async (testContext) => {
     const debug = new Debug(`${suiteContext.name}.test.${testContext.name}`);
     debug.write(MessageType.Entry);
-    await repositoryTableService.findOne(database.query, { uuid: uuid });
+    await service.findOne(database.query, { uuid: uuid });
     debug.write(MessageType.Exit);
     assert.ok(true);
   });
@@ -46,7 +46,7 @@ describe('main', (suiteContext) => {
     const debug = new Debug(`${suiteContext.name}.test.${testContext.name}`);
     debug.write(MessageType.Entry);
     await database.transaction(async (query) => {
-      await repositoryTableService.update(
+      await service.update(
         query,
         { uuid: uuid },
         {
@@ -63,7 +63,7 @@ describe('main', (suiteContext) => {
     const debug = new Debug(`${suiteContext.name}.test.${testContext.name}`);
     debug.write(MessageType.Entry);
     await database.transaction(async (query) => {
-      await repositoryTableService.delete(query, { uuid: uuid });
+      await service.delete(query, { uuid: uuid });
     });
     debug.write(MessageType.Exit);
     assert.ok(true);

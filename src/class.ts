@@ -1,8 +1,7 @@
-import { Query } from 'database';
+import { BaseService, Query, Row } from 'base-service-class';
 import { checkUniqueKey, findByPrimaryKey, updateRow } from 'database-helpers';
 import { Debug, MessageType } from 'node-debug';
 import { BadRequestError, ConflictError, NotFoundError } from 'node-errors';
-import { RepositoryService, Row } from 'repository-service-class';
 
 export type PrimaryKey = {
   uuid?: string;
@@ -32,11 +31,7 @@ const checkName = (name: string) => {
   }
 };
 
-export class RepositoryTableService extends RepositoryService<
-  PrimaryKey,
-  Data,
-  System
-> {
+export class Service extends BaseService<PrimaryKey, Data, false, System> {
   async preCreate() {
     const debug = new Debug(`${this.debugSource}.preCreate`);
     debug.write(MessageType.Entry);
@@ -157,7 +152,7 @@ export class RepositoryTableService extends RepositoryService<
     const row = (await findByPrimaryKey(query, this.tableName, primaryKey, {
       columnNames: this.columnNames,
       forUpdate: true,
-    })) as Row<PrimaryKey, Data, System>;
+    })) as Row<PrimaryKey, Data, false, System>;
     if (row.unique_key) {
       throw new ConflictError(`Table (${row.name}) already has a unique key`);
     }
@@ -228,7 +223,7 @@ export class RepositoryTableService extends RepositoryService<
     const row = (await findByPrimaryKey(query, this.tableName, primaryKey, {
       columnNames: this.columnNames,
       forUpdate: true,
-    })) as Row<PrimaryKey, Data, System>;
+    })) as Row<PrimaryKey, Data, false, System>;
     if (!row.unique_key) {
       throw new NotFoundError(`${row.name} table does not have a unique key`);
     }
@@ -255,4 +250,4 @@ export class RepositoryTableService extends RepositoryService<
   }
 }
 
-export { CreateData, Query, Row, UpdateData } from 'repository-service-class';
+export { CreateData, Query, Row, UpdateData } from 'base-service-class';

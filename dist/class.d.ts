@@ -1,5 +1,4 @@
-import { Query } from 'database';
-import { RepositoryService } from 'repository-service-class';
+import { BaseService, Query } from 'base-service-class';
 export type PrimaryKey = {
     uuid?: string;
 };
@@ -12,7 +11,7 @@ export type System = {
     column_count?: number;
     unique_key?: string | null;
 };
-export declare class RepositoryTableService extends RepositoryService<PrimaryKey, Data, System> {
+export declare class Service extends BaseService<PrimaryKey, Data, false, System> {
     preCreate(): Promise<void>;
     preUpdate(): Promise<void>;
     preDelete(): Promise<void>;
@@ -22,4 +21,4 @@ export declare class RepositoryTableService extends RepositoryService<PrimaryKey
     createUniqueKey(query: Query, primaryKey: Required<PrimaryKey>, columns: string[]): Promise<void>;
     deleteUniqueKey(query: Query, primaryKey: Required<PrimaryKey>): Promise<void>;
 }
-export { CreateData, Query, Row, UpdateData } from 'repository-service-class';
+export { CreateData, Query, Row, UpdateData } from 'base-service-class';
