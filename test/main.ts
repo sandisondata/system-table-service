@@ -6,7 +6,7 @@ import { Debug, MessageType } from 'node-debug';
 import { CreateData, PrimaryKey, service, UpdateData } from '../dist';
 
 describe('main', (suiteContext) => {
-  Debug.initialise(true);
+  Debug.initialize(true);
   let database: Database;
   let uuid: string;
   before(() => {
@@ -72,7 +72,7 @@ describe('main', (suiteContext) => {
   after(async () => {
     const debug = new Debug(`${suiteContext.name}.after`);
     debug.write(MessageType.Entry);
-    await database.shutdown();
+    await database.disconnect();
     debug.write(MessageType.Exit);
   });
 });
