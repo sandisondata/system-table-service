@@ -9,7 +9,7 @@ export type PrimaryKey = {
   uuid?: string;
 };
 
-type Data = {
+export type Data = {
   name: string;
   singular_name: string;
   is_enabled?: boolean;
