@@ -1,6 +1,5 @@
 import {
   CreateData,
-  Data,
   PrimaryKey,
   Query,
   Row,
@@ -9,7 +8,7 @@ import {
   UpdateData,
 } from './class';
 
-export { CreateData, Data, PrimaryKey, Query, Row, System, UpdateData };
+export { CreateData, PrimaryKey, Query, Row, System, UpdateData };
 
 const service = new Service(
   'system-table-service',

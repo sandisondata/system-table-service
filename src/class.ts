@@ -1,13 +1,15 @@
-import { BaseService, Query, Row } from 'base-service-class';
+import { BaseService, Query } from 'base-service-class';
 import { checkUniqueKey, findByPrimaryKey, updateRow } from 'database-helpers';
 import { Debug, MessageType } from 'node-debug';
 import { BadRequestError, ConflictError, NotFoundError } from 'node-errors';
+
+export { Query };
 
 export type PrimaryKey = {
   uuid?: string;
 };
 
-export type Data = {
+type Data = {
   name: string;
   singular_name: string;
   is_enabled?: boolean;
@@ -17,6 +19,10 @@ export type System = {
   column_count?: number;
   unique_key?: string | null;
 };
+
+export type CreateData = PrimaryKey & Data;
+export type Row = Required<PrimaryKey> & Required<Data> & Required<System>;
+export type UpdateData = Partial<Data>;
 
 type UniqueKeyColumn = {
   uuid: string;
@@ -31,7 +37,13 @@ const checkName = (name: string) => {
   }
 };
 
-export class Service extends BaseService<PrimaryKey, Data, false, System> {
+export class Service extends BaseService<
+  PrimaryKey,
+  CreateData,
+  Row,
+  UpdateData,
+  System
+> {
   async preCreate() {
     const debug = new Debug(`${this.debugSource}.preCreate`);
     debug.write(MessageType.Entry);
@@ -139,7 +151,7 @@ export class Service extends BaseService<PrimaryKey, Data, false, System> {
 
   async createUniqueKey(
     query: Query,
-    primaryKey: Required<PrimaryKey>,
+    primaryKey: PrimaryKey,
     columns: string[],
   ) {
     const debug = new Debug(`${this.debugSource}.createUniqueKey`);
@@ -152,7 +164,7 @@ export class Service extends BaseService<PrimaryKey, Data, false, System> {
     const row = (await findByPrimaryKey(query, this.tableName, primaryKey, {
       columnNames: this.columnNames,
       forUpdate: true,
-    })) as Row<PrimaryKey, Data, false, System>;
+    })) as Row;
     if (row.unique_key) {
       throw new ConflictError(`Table (${row.name}) already has a unique key`);
     }
@@ -216,14 +228,14 @@ export class Service extends BaseService<PrimaryKey, Data, false, System> {
     debug.write(MessageType.Exit);
   }
 
-  async deleteUniqueKey(query: Query, primaryKey: Required<PrimaryKey>) {
+  async deleteUniqueKey(query: Query, primaryKey: PrimaryKey) {
     const debug = new Debug(`${this.debugSource}.deleteUniqueKey`);
     debug.write(MessageType.Entry, `primaryKey=${JSON.stringify(primaryKey)}`);
     debug.write(MessageType.Step, 'Finding row by primary key...');
     const row = (await findByPrimaryKey(query, this.tableName, primaryKey, {
       columnNames: this.columnNames,
       forUpdate: true,
-    })) as Row<PrimaryKey, Data, false, System>;
+    })) as Row;
     if (!row.unique_key) {
       throw new NotFoundError(`${row.name} table does not have a unique key`);
     }
@@ -249,5 +261,3 @@ export class Service extends BaseService<PrimaryKey, Data, false, System> {
     debug.write(MessageType.Exit);
   }
 }
-
-export { CreateData, Query, Row, UpdateData } from 'base-service-class';
