@@ -9,12 +9,14 @@ describe('main', (suiteContext) => {
   Debug.initialize(true);
   let database: Database;
   let uuid: string;
+
   before(() => {
     const debug = new Debug(`${suiteContext.name}.before`);
     debug.write(MessageType.Entry);
     database = Database.getInstance();
     debug.write(MessageType.Exit);
   });
+
   it('create', async (testContext) => {
     const debug = new Debug(`${suiteContext.name}.test.${testContext.name}`);
     debug.write(MessageType.Entry);
@@ -28,6 +30,7 @@ describe('main', (suiteContext) => {
     debug.write(MessageType.Exit);
     assert.ok(true);
   });
+
   it('find', async (testContext) => {
     const debug = new Debug(`${suiteContext.name}.test.${testContext.name}`);
     debug.write(MessageType.Entry);
@@ -35,6 +38,7 @@ describe('main', (suiteContext) => {
     debug.write(MessageType.Exit);
     assert.ok(true);
   });
+
   it('findOne', async (testContext) => {
     const debug = new Debug(`${suiteContext.name}.test.${testContext.name}`);
     debug.write(MessageType.Entry);
@@ -42,6 +46,7 @@ describe('main', (suiteContext) => {
     debug.write(MessageType.Exit);
     assert.ok(true);
   });
+
   it('update', async (testContext) => {
     const debug = new Debug(`${suiteContext.name}.test.${testContext.name}`);
     debug.write(MessageType.Entry);
@@ -59,6 +64,7 @@ describe('main', (suiteContext) => {
     debug.write(MessageType.Exit);
     assert.ok(true);
   });
+
   it('delete', async (testContext) => {
     const debug = new Debug(`${suiteContext.name}.test.${testContext.name}`);
     debug.write(MessageType.Entry);
@@ -68,6 +74,7 @@ describe('main', (suiteContext) => {
     debug.write(MessageType.Exit);
     assert.ok(true);
   });
+
   after(async () => {
     const debug = new Debug(`${suiteContext.name}.after`);
     debug.write(MessageType.Entry);
