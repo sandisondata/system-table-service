@@ -144,7 +144,7 @@ class Service extends base_service_class_1.BaseService {
             debug.write(node_debug_1.MessageType.Step, 'Finding columns...');
             for (let i = 0; i < columns.length; i++) {
                 sql =
-                    'SELECT uuid, name, is_not_null ' +
+                    'SELECT table_uuid, name, is_not_null ' +
                         'FROM _columns ' +
                         `WHERE uuid = "${columns[i]}" ` +
                         'FOR UPDATE';
@@ -153,7 +153,7 @@ class Service extends base_service_class_1.BaseService {
                 if (!column) {
                     throw new node_errors_1.NotFoundError(`Column ${i + 1} not found`);
                 }
-                if (column.uuid !== row.uuid) {
+                if (column.table_uuid !== row.uuid) {
                     throw new node_errors_1.NotFoundError(`Column ${i + 1} (${column.name}) not found on table (${row.name})`);
                 }
                 if (!column.is_not_null) {

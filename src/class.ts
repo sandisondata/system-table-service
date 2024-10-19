@@ -25,7 +25,7 @@ export type UpdateData = Partial<Data>;
 export type Row = Required<PrimaryKey> & Required<Data> & Required<System>;
 
 type UniqueKeyColumn = {
-  uuid: string;
+  table_uuid: string;
   name: string;
   is_not_null: boolean;
 };
@@ -179,7 +179,7 @@ export class Service extends BaseService<
     debug.write(MessageType.Step, 'Finding columns...');
     for (let i = 0; i < columns.length; i++) {
       sql =
-        'SELECT uuid, name, is_not_null ' +
+        'SELECT table_uuid, name, is_not_null ' +
         'FROM _columns ' +
         `WHERE uuid = "${columns[i]}" ` +
         'FOR UPDATE';
@@ -188,7 +188,7 @@ export class Service extends BaseService<
       if (!column) {
         throw new NotFoundError(`Column ${i + 1} not found`);
       }
-      if (column.uuid !== row.uuid) {
+      if (column.table_uuid !== row.uuid) {
         throw new NotFoundError(
           `Column ${i + 1} (${column.name}) not found on table (${row.name})`,
         );

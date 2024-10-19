@@ -1,17 +1,6 @@
-import {
-  CreateData,
-  Data,
-  PrimaryKey,
-  Query,
-  Row,
-  Service,
-  System,
-  UpdateData,
-} from './class';
+import { Service } from './class';
 
-export { CreateData, Data, PrimaryKey, Query, Row, System, UpdateData };
-
-const service = new Service(
+export const service = new Service(
   'system-table-service',
   '_tables',
   ['uuid'],
@@ -20,4 +9,12 @@ const service = new Service(
   ['column_count', 'unique_key'],
 );
 
-export { service };
+export {
+  CreateData,
+  Data,
+  PrimaryKey,
+  Query,
+  Row,
+  System,
+  UpdateData,
+} from './class';
