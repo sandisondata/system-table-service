@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 
 import { Database } from 'database';
 import { Debug, MessageType } from 'node-debug';
-import { CreateData, PrimaryKey, service, UpdateData } from '../dist';
+import { service } from '../dist';
 
 describe('main', (suiteContext) => {
   Debug.initialize(true);
@@ -19,11 +19,10 @@ describe('main', (suiteContext) => {
     const debug = new Debug(`${suiteContext.name}.test.${testContext.name}`);
     debug.write(MessageType.Entry);
     await database.transaction(async (query) => {
-      const createData: CreateData = {
+      const row = await service.create(query, {
         name: 'gadgets',
         singular_name: 'gadget',
-      };
-      const row = await service.create(query, createData);
+      });
       uuid = row.uuid;
     });
     debug.write(MessageType.Exit);
@@ -39,8 +38,7 @@ describe('main', (suiteContext) => {
   it('findOne', async (testContext) => {
     const debug = new Debug(`${suiteContext.name}.test.${testContext.name}`);
     debug.write(MessageType.Entry);
-    const primaryKey: Required<PrimaryKey> = { uuid: uuid };
-    await service.findOne(database.query, primaryKey);
+    await service.findOne(database.query, { uuid: uuid });
     debug.write(MessageType.Exit);
     assert.ok(true);
   });
@@ -48,13 +46,15 @@ describe('main', (suiteContext) => {
     const debug = new Debug(`${suiteContext.name}.test.${testContext.name}`);
     debug.write(MessageType.Entry);
     await database.transaction(async (query) => {
-      const primaryKey: Required<PrimaryKey> = { uuid: uuid };
-      const updateData: UpdateData = {
-        name: 'gizmos',
-        singular_name: 'gizmo',
-        is_enabled: true,
-      };
-      await service.update(query, primaryKey, updateData);
+      await service.update(
+        query,
+        { uuid: uuid },
+        {
+          name: 'gizmos',
+          singular_name: 'gizmo',
+          is_enabled: true,
+        },
+      );
     });
     debug.write(MessageType.Exit);
     assert.ok(true);
@@ -63,8 +63,7 @@ describe('main', (suiteContext) => {
     const debug = new Debug(`${suiteContext.name}.test.${testContext.name}`);
     debug.write(MessageType.Entry);
     await database.transaction(async (query) => {
-      const primaryKey: Required<PrimaryKey> = { uuid: uuid };
-      await service.delete(query, primaryKey);
+      await service.delete(query, { uuid: uuid });
     });
     debug.write(MessageType.Exit);
     assert.ok(true);
