@@ -21,8 +21,8 @@ export type System = {
 };
 
 export type CreateData = PrimaryKey & Data;
-export type Row = Required<PrimaryKey> & Required<Data> & Required<System>;
 export type UpdateData = Partial<Data>;
+export type Row = Required<PrimaryKey> & Required<Data> & Required<System>;
 
 type UniqueKeyColumn = {
   uuid: string;
@@ -40,8 +40,8 @@ const checkName = (name: string) => {
 export class Service extends BaseService<
   PrimaryKey,
   CreateData,
-  Row,
   UpdateData,
+  Row,
   System
 > {
   async preCreate() {
@@ -105,7 +105,7 @@ export class Service extends BaseService<
     const debug = new Debug(`${this.debugSource}.postCreate`);
     debug.write(MessageType.Entry);
     debug.write(MessageType.Step, 'Creating data table (and sequence)...');
-    const text =
+    const sql =
       `CREATE TABLE ${this.row.name} (` +
       'id serial, ' +
       'creation_date timestamptz NOT NULL DEFAULT now(), ' +
@@ -115,8 +115,8 @@ export class Service extends BaseService<
       'file_count smallint NOT NULL DEFAULT 0, ' +
       `CONSTRAINT "${this.row.uuid}_pk" PRIMARY KEY (id)` +
       ')';
-    debug.write(MessageType.Value, `text=(${text})`);
-    await this.query(text);
+    debug.write(MessageType.Value, `sql=(${sql})`);
+    await this.query(sql);
     debug.write(MessageType.Exit);
   }
 
@@ -125,16 +125,16 @@ export class Service extends BaseService<
     debug.write(MessageType.Entry);
     if (this.row.name !== this.oldRow.name) {
       debug.write(MessageType.Step, 'Renaming data table...');
-      let text =
+      let sql =
         `ALTER TABLE ${this.oldRow.name} ` + `RENAME TO ${this.row.name}`;
-      debug.write(MessageType.Value, `text=(${text})`);
-      await this.query(text);
+      debug.write(MessageType.Value, `sql=(${sql})`);
+      await this.query(sql);
       debug.write(MessageType.Step, 'Renaming data table sequence...');
-      text =
+      sql =
         `ALTER SEQUENCE ${this.oldRow.name}_id_seq ` +
         `RENAME TO ${this.row.name}_id_seq`;
-      debug.write(MessageType.Value, `text=(${text})`);
-      await this.query(text);
+      debug.write(MessageType.Value, `sql=(${sql})`);
+      await this.query(sql);
     }
     debug.write(MessageType.Exit);
   }
@@ -143,9 +143,9 @@ export class Service extends BaseService<
     const debug = new Debug(`${this.debugSource}.postDelete`);
     debug.write(MessageType.Entry);
     debug.write(MessageType.Step, 'Dropping data table (and sequence)...');
-    const text = `DROP TABLE ${this.row.name}`;
-    debug.write(MessageType.Value, `text=(${text})`);
-    await this.query(text);
+    const sql = `DROP TABLE ${this.row.name}`;
+    debug.write(MessageType.Value, `sql=(${sql})`);
+    await this.query(sql);
     debug.write(MessageType.Exit);
   }
 
@@ -175,17 +175,16 @@ export class Service extends BaseService<
       throw new BadRequestError('Duplicate columns are not allowed');
     }
     const columnNames: string[] = [];
-    let text = '';
+    let sql = '';
     debug.write(MessageType.Step, 'Finding columns...');
     for (let i = 0; i < columns.length; i++) {
-      text =
+      sql =
         'SELECT uuid, name, is_not_null ' +
         'FROM _columns ' +
         `WHERE uuid = "${columns[i]}" ` +
         'FOR UPDATE';
-      debug.write(MessageType.Value, `text=(${text})`);
-      const column: UniqueKeyColumn | null =
-        (await query(text)).rows[0] || null;
+      debug.write(MessageType.Value, `sql=(${sql})`);
+      const column: UniqueKeyColumn | null = (await query(sql)).rows[0] || null;
       if (!column) {
         throw new NotFoundError(`Column ${i + 1} not found`);
       }
@@ -203,23 +202,23 @@ export class Service extends BaseService<
     }
     debug.write(MessageType.Step, 'Adding constraint...');
     try {
-      text =
+      sql =
         `ALTER TABLE ${row.name} ` +
         `ADD CONSTRAINT "${row.uuid}_uk" ` +
         `UNIQUE (${columnNames.join(', ')})`;
-      debug.write(MessageType.Value, `text=(${text})`);
-      await query(text);
+      debug.write(MessageType.Value, `sql=(${sql})`);
+      await query(sql);
     } catch (error) {
       throw new Error('Could not add constraint');
     }
     debug.write(MessageType.Step, 'Setting column positions...');
     for (let i = 0; i < columns.length; i++) {
-      text =
+      sql =
         'UPDATE _columns ' +
         `SET position_in_unique_key = ${i + 1} ` +
         `WHERE uuid = "${columns[i]}"`;
-      debug.write(MessageType.Value, `text=(${text})`);
-      await query(text);
+      debug.write(MessageType.Value, `sql=(${sql})`);
+      await query(sql);
     }
     debug.write(MessageType.Step, 'Updating row...');
     await updateRow(query, this.tableName, primaryKey, {
@@ -239,23 +238,23 @@ export class Service extends BaseService<
     if (!row.unique_key) {
       throw new NotFoundError(`${row.name} table does not have a unique key`);
     }
-    let text = '';
+    let sql = '';
     debug.write(MessageType.Step, 'Dropping constraint...');
     try {
-      text = `ALTER table ${row.name} ` + `DROP CONSTRAINT "${row.uuid}_uk"`;
-      debug.write(MessageType.Value, `text=(${text})`);
-      await query(text);
+      sql = `ALTER table ${row.name} ` + `DROP CONSTRAINT "${row.uuid}_uk"`;
+      debug.write(MessageType.Value, `sql=(${sql})`);
+      await query(sql);
     } catch (error) {
       throw new Error('Could not drop constraint');
     }
     debug.write(MessageType.Step, 'Clearing column positions...');
     const columns: string[] = JSON.parse(row.unique_key).columns;
-    text =
+    sql =
       'UPDATE _columns ' +
       'SET position_in_unique_key = null ' +
       `WHERE column_uuid IN (${columns.map((x) => `"${x}"`).join(', ')})`;
-    debug.write(MessageType.Value, `text=(${text})`);
-    await query(text);
+    debug.write(MessageType.Value, `sql=(${sql})`);
+    await query(sql);
     debug.write(MessageType.Step, 'Updating row...');
     await updateRow(query, this.tableName, primaryKey, { unique_key: null });
     debug.write(MessageType.Exit);
