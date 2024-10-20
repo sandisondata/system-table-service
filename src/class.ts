@@ -3,8 +3,6 @@ import { checkUniqueKey, findByPrimaryKey, updateRow } from 'database-helpers';
 import { Debug, MessageType } from 'node-debug';
 import { BadRequestError, ConflictError, NotFoundError } from 'node-errors';
 
-export { Query };
-
 export type PrimaryKey = {
   uuid?: string;
 };

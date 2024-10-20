@@ -1,5 +1,4 @@
 import { BaseService, Query } from 'base-service-class';
-export { Query };
 export type PrimaryKey = {
     uuid?: string;
 };
@@ -25,3 +24,4 @@ export declare class Service extends BaseService<PrimaryKey, CreateData, UpdateD
     createUniqueKey(query: Query, primaryKey: PrimaryKey, columns: string[]): Promise<void>;
     deleteUniqueKey(query: Query, primaryKey: PrimaryKey): Promise<void>;
 }
+export {};
