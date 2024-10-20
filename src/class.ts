@@ -147,6 +147,17 @@ export class Service extends BaseService<
     debug.write(MessageType.Exit);
   }
 
+  /**
+   * Creates a unique key constraint for a table based on the provided primary key and columns.
+   * @param query The database query object
+   * @param primaryKey The primary key of the table
+   * @param columns An array of column UUIDs for the unique key constraint
+   * @throws ConflictError if the table already has a unique key
+   * @throws BadRequestError if no columns are specified or duplicate columns are provided
+   * @throws NotFoundError if a column is not found or does not belong to the table
+   * @throws BadRequestError if a column is nullable
+   * @throws Error if adding the constraint fails
+   */
   async createUniqueKey(
     query: Query,
     primaryKey: PrimaryKey,
@@ -225,6 +236,13 @@ export class Service extends BaseService<
     debug.write(MessageType.Exit);
   }
 
+  /**
+   * Deletes the unique key constraint for a table based on the provided primary key.
+   * @param query The database query object
+   * @param primaryKey The primary key of the table
+   * @throws NotFoundError if the table does not have a unique key
+   * @throws Error if the constraint cannot be dropped
+   */
   async deleteUniqueKey(query: Query, primaryKey: PrimaryKey) {
     const debug = new Debug(`${this.debugSource}.deleteUniqueKey`);
     debug.write(MessageType.Entry, `primaryKey=${JSON.stringify(primaryKey)}`);

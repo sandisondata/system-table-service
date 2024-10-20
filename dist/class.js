@@ -120,6 +120,17 @@ class Service extends base_service_class_1.BaseService {
             debug.write(node_debug_1.MessageType.Exit);
         });
     }
+    /**
+     * Creates a unique key constraint for a table based on the provided primary key and columns.
+     * @param query The database query object
+     * @param primaryKey The primary key of the table
+     * @param columns An array of column UUIDs for the unique key constraint
+     * @throws ConflictError if the table already has a unique key
+     * @throws BadRequestError if no columns are specified or duplicate columns are provided
+     * @throws NotFoundError if a column is not found or does not belong to the table
+     * @throws BadRequestError if a column is nullable
+     * @throws Error if adding the constraint fails
+     */
     createUniqueKey(query, primaryKey, columns) {
         return __awaiter(this, void 0, void 0, function* () {
             const debug = new node_debug_1.Debug(`${this.debugSource}.createUniqueKey`);
@@ -189,6 +200,13 @@ class Service extends base_service_class_1.BaseService {
             debug.write(node_debug_1.MessageType.Exit);
         });
     }
+    /**
+     * Deletes the unique key constraint for a table based on the provided primary key.
+     * @param query The database query object
+     * @param primaryKey The primary key of the table
+     * @throws NotFoundError if the table does not have a unique key
+     * @throws Error if the constraint cannot be dropped
+     */
     deleteUniqueKey(query, primaryKey) {
         return __awaiter(this, void 0, void 0, function* () {
             const debug = new node_debug_1.Debug(`${this.debugSource}.deleteUniqueKey`);
