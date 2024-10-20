@@ -9,12 +9,4 @@ export const service = new Service(
   ['column_count', 'unique_key'],
 );
 
-export {
-  CreateData,
-  Data,
-  PrimaryKey,
-  Query,
-  Row,
-  System,
-  UpdateData,
-} from './class';
+export { CreateData, PrimaryKey, Row, UpdateData } from './class';

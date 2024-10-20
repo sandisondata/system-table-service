@@ -76,14 +76,14 @@ class Service extends base_service_class_1.BaseService {
             const debug = new node_debug_1.Debug(`${this.debugSource}.postCreate`);
             debug.write(node_debug_1.MessageType.Entry);
             debug.write(node_debug_1.MessageType.Step, 'Creating data table (and sequence)...');
-            const sql = `CREATE TABLE ${this.row.name} (` +
+            const sql = `CREATE TABLE ${this.createdRow.name} (` +
                 'id serial, ' +
                 'creation_date timestamptz NOT NULL DEFAULT now(), ' +
                 'created_by uuid NOT NULL DEFAULT uuid_nil(), ' +
                 'last_update_date timestamptz NOT NULL DEFAULT now(), ' +
                 'last_updated_by uuid NOT NULL DEFAULT uuid_nil(), ' +
                 'file_count smallint NOT NULL DEFAULT 0, ' +
-                `CONSTRAINT "${this.row.uuid}_pk" PRIMARY KEY (id)` +
+                `CONSTRAINT "${this.createdRow.uuid}_pk" PRIMARY KEY (id)` +
                 ')';
             debug.write(node_debug_1.MessageType.Value, `sql=(${sql})`);
             yield this.query(sql);
@@ -94,15 +94,15 @@ class Service extends base_service_class_1.BaseService {
         return __awaiter(this, void 0, void 0, function* () {
             const debug = new node_debug_1.Debug(`${this.debugSource}.postUpdate`);
             debug.write(node_debug_1.MessageType.Entry);
-            if (this.row.name !== this.oldRow.name) {
+            if (this.updatedRow.name !== this.row.name) {
                 debug.write(node_debug_1.MessageType.Step, 'Renaming data table...');
-                let sql = `ALTER TABLE ${this.oldRow.name} ` + `RENAME TO ${this.row.name}`;
+                let sql = `ALTER TABLE ${this.row.name} ` + `RENAME TO ${this.updatedRow.name}`;
                 debug.write(node_debug_1.MessageType.Value, `sql=(${sql})`);
                 yield this.query(sql);
                 debug.write(node_debug_1.MessageType.Step, 'Renaming data table sequence...');
                 sql =
-                    `ALTER SEQUENCE ${this.oldRow.name}_id_seq ` +
-                        `RENAME TO ${this.row.name}_id_seq`;
+                    `ALTER SEQUENCE ${this.row.name}_id_seq ` +
+                        `RENAME TO ${this.updatedRow.name}_id_seq`;
                 debug.write(node_debug_1.MessageType.Value, `sql=(${sql})`);
                 yield this.query(sql);
             }

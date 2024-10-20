@@ -1,3 +1,3 @@
 import { Service } from './class';
 export declare const service: Service;
-export { CreateData, Data, PrimaryKey, Query, Row, System, UpdateData, } from './class';
+export { CreateData, PrimaryKey, Row, UpdateData } from './class';

@@ -3,12 +3,12 @@ export { Query };
 export type PrimaryKey = {
     uuid?: string;
 };
-export type Data = {
+type Data = {
     name: string;
     singular_name: string;
     is_enabled?: boolean;
 };
-export type System = {
+type System = {
     column_count?: number;
     unique_key?: string | null;
 };
