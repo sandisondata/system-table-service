@@ -1,7 +1,7 @@
 {
   "name": "system-table-service",
   "version": "1.0.0",
-  "description": "System table service",
+  "description": "System Table Service",
   "author": "Grant Fortington",
   "private": true,
   "license": "MIT",
