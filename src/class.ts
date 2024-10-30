@@ -62,8 +62,8 @@ export class Service extends BaseService<
     const debug = new Debug(`${this.debugSource}.preUpdate`);
     debug.write(MessageType.Entry);
     if (
-      typeof this.updateData.name !== 'undefined' &&
-      this.updateData.name !== this.row.name
+      typeof this.updateData.name != 'undefined' &&
+      this.updateData.name != this.row.name
     ) {
       debug.write(MessageType.Step, 'Checking name...');
       checkName(this.updateData.name);
@@ -76,8 +76,8 @@ export class Service extends BaseService<
       await checkUniqueKey(this.query, this.tableName, uniqueKey1);
     }
     if (
-      typeof this.updateData.singular_name !== 'undefined' &&
-      this.updateData.singular_name !== this.row.singular_name
+      typeof this.updateData.singular_name != 'undefined' &&
+      this.updateData.singular_name != this.row.singular_name
     ) {
       const uniqueKey2 = {
         singular_name: this.updateData.singular_name,
@@ -121,7 +121,7 @@ export class Service extends BaseService<
   async postUpdate() {
     const debug = new Debug(`${this.debugSource}.postUpdate`);
     debug.write(MessageType.Entry);
-    if (this.updatedRow.name !== this.row.name) {
+    if (this.updatedRow.name != this.row.name) {
       debug.write(MessageType.Step, 'Renaming data table...');
       let sql =
         `ALTER TABLE ${this.row.name} ` + `RENAME TO ${this.updatedRow.name}`;
@@ -197,7 +197,7 @@ export class Service extends BaseService<
       if (!column) {
         throw new NotFoundError(`Column ${i + 1} not found`);
       }
-      if (column.table_uuid !== row.uuid) {
+      if (column.table_uuid != row.uuid) {
         throw new NotFoundError(
           `Column ${i + 1} (${column.name}) not found on table (${row.name})`,
         );

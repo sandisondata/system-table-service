@@ -42,8 +42,8 @@ class Service extends base_service_class_1.BaseService {
         return __awaiter(this, void 0, void 0, function* () {
             const debug = new node_debug_1.Debug(`${this.debugSource}.preUpdate`);
             debug.write(node_debug_1.MessageType.Entry);
-            if (typeof this.updateData.name !== 'undefined' &&
-                this.updateData.name !== this.row.name) {
+            if (typeof this.updateData.name != 'undefined' &&
+                this.updateData.name != this.row.name) {
                 debug.write(node_debug_1.MessageType.Step, 'Checking name...');
                 checkName(this.updateData.name);
                 const uniqueKey1 = { name: this.updateData.name };
@@ -51,8 +51,8 @@ class Service extends base_service_class_1.BaseService {
                 debug.write(node_debug_1.MessageType.Step, 'Checking unique key 1...');
                 yield (0, database_helpers_1.checkUniqueKey)(this.query, this.tableName, uniqueKey1);
             }
-            if (typeof this.updateData.singular_name !== 'undefined' &&
-                this.updateData.singular_name !== this.row.singular_name) {
+            if (typeof this.updateData.singular_name != 'undefined' &&
+                this.updateData.singular_name != this.row.singular_name) {
                 const uniqueKey2 = {
                     singular_name: this.updateData.singular_name,
                 };
@@ -94,7 +94,7 @@ class Service extends base_service_class_1.BaseService {
         return __awaiter(this, void 0, void 0, function* () {
             const debug = new node_debug_1.Debug(`${this.debugSource}.postUpdate`);
             debug.write(node_debug_1.MessageType.Entry);
-            if (this.updatedRow.name !== this.row.name) {
+            if (this.updatedRow.name != this.row.name) {
                 debug.write(node_debug_1.MessageType.Step, 'Renaming data table...');
                 let sql = `ALTER TABLE ${this.row.name} ` + `RENAME TO ${this.updatedRow.name}`;
                 debug.write(node_debug_1.MessageType.Value, `sql=(${sql})`);
@@ -164,7 +164,7 @@ class Service extends base_service_class_1.BaseService {
                 if (!column) {
                     throw new node_errors_1.NotFoundError(`Column ${i + 1} not found`);
                 }
-                if (column.table_uuid !== row.uuid) {
+                if (column.table_uuid != row.uuid) {
                     throw new node_errors_1.NotFoundError(`Column ${i + 1} (${column.name}) not found on table (${row.name})`);
                 }
                 if (!column.is_not_null) {
